@@ -1,4 +1,4 @@
-package de.files.anontest;
+//package de.files.anontest;
 
 import java.applet.Applet;
 import java.awt.Color;
@@ -8,13 +8,16 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.*;
+import javax.net.ssl.*;
+import java.security.*;
 
 
 public class RevealerApplet extends Applet {
 	private String str_message = "Java ist aktiviert!";
-	private String str_ext_ip = "";
-	private String str_int_ip = "Ihre interne IP ist: ";
-	private String targetHTML = "onlyip.php";
+	public String str_ext_ip = "";
+	public String str_int_ip = "";
+	private String targetHTML = "/de/files/anontest/onlyip.php";
 	private int width = 2000;
 	private int height = 100;
 
@@ -24,10 +27,10 @@ public class RevealerApplet extends Applet {
 	}
 
 	public void init() {
-		super.init();
-		if(this.getParameter("TARGET") != null){
-			targetHTML = this.getParameter("Target");
-		}
+		//super.init();
+		//if(this.getParameter("TARGET") != null){
+		//	targetHTML = this.getParameter("Target");
+		//}
 		super.init();
 		if(this.getParameter("WIDTH") != null){
 			try{
@@ -43,19 +46,23 @@ public class RevealerApplet extends Applet {
 		
 		try{
 			String host = this.getDocumentBase().getHost();
-			int port = this.getDocumentBase().getPort();
-			if(port == -1) port = 80;
-			Socket sock = new Socket(host, port);
+			int port = 443; //this.getDocumentBase().getPort();
+			//if(port == -1) port = 80;
+			//Socket sock = new Socket(host, port);
+			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			SSLSocket sock = (SSLSocket) factory.createSocket(host, port);
 			str_int_ip += sock.getLocalAddress().getHostAddress();
+			//str_int_ip += InetAddress.isSiteLocalAddress();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
-			String getRequest = "GET " + targetHTML +"\n\n\n";
+			String getRequest = "GET https://"+ host + targetHTML +"\n\n\n";
 			writer.write(getRequest);
 			writer.flush();
 			String line;
 			while((line=reader.readLine()) != null){
 				str_ext_ip += line;
 			}
+			if((str_int_ip == "127.0.0.1") || (str_int_ip == str_ext_ip)) str_int_ip="";
 			repaint();
 		}catch(Exception e){
 			str_ext_ip = "ERROR:" +e;
@@ -77,8 +84,8 @@ public class RevealerApplet extends Applet {
 		g.fillRect(0, 0, width, height);
 		g.setColor(Color.white);
 		g.drawString(str_message, 0, 20);
-		g.drawString(str_ext_ip, 20, 50);
-		g.drawString(str_int_ip, 20, 80);
+		if(str_ext_ip != "") g.drawString("Ihre externe IP ist: "+str_ext_ip, 20, 50);
+		if(str_int_ip != "") g.drawString("Ihre interne IP ist: "+str_int_ip, 20, 80);
 		
 	}
 }
