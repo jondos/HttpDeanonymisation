@@ -31,9 +31,9 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private int m_width = 500;
 	private int m_height = 250;
 	
-	private Vector<String> m_vecExternalIPs;
-	private Vector<String> m_vecInternalIPs;
-	private Vector<Object[]> m_vecInterfaces;
+	private Vector m_vecExternalIPs;
+	private Vector m_vecInternalIPs;
+	private Vector m_vecInterfaces;
 	
 	private Font m_fNormal = new Font("Verdana", 0, 12);
 	private Font m_fHeader = new Font("Verdana", Font.BOLD, 14);
@@ -118,8 +118,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		c.insets = new Insets(0, 0, 5, 0);
 		for(int i = 0; i < m_vecInterfaces.size(); i++)
 		{
-			String name = m_vecInterfaces.elementAt(i)[0].toString();
-			String addr = m_vecInterfaces.elementAt(i)[1].toString();
+			String name = ((Object[]) m_vecInterfaces.elementAt(i))[0].toString();
+			String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
 			c.gridy++;
 			m_networkPanel.add(createLabel((i + 1) + ". " + name), c);
 			c.gridy++;
