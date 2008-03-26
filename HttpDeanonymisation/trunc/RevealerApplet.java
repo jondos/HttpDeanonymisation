@@ -44,19 +44,35 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private JPanel m_osPanel;
 	private JButton m_btnSwitch;
 	
+	private final static String TEXT_SWITCH_TO_OS_PANEL = "Betriebssystem-Eigenschaften anzeigen";
+	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Netzwerk-Eigenschaften anzeigen";
+	
 	public void init() 
 	{
 		super.init();
-		if(this.getParameter("WIDTH") != null){
-			try{
+		
+		if(this.getParameter("WIDTH") != null)
+		{
+			try
+			{
 				m_width = Integer.parseInt(this.getParameter("WIDTH"));
-			}catch(NumberFormatException e){}
+			}
+			catch(NumberFormatException e)
+			{
+				
+			}
 		}
 		
-		if(this.getParameter("HEIGHT") != null){
-			try{
+		if(this.getParameter("HEIGHT") != null)
+		{
+			try
+			{
 				m_height = Integer.parseInt(this.getParameter("HEIGHT"));
-			}catch(NumberFormatException e){}
+			}
+			catch(NumberFormatException e)
+			{
+				
+			}
 		}
 		
 		this.setSize(m_width, m_height);
@@ -155,7 +171,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		addSystemPropertyLabel(m_osPanel, "browser.vendor", c);
 		addSystemPropertyLabel(m_osPanel, "browser.version", c);		
 
-		m_btnSwitch = new JButton("switcheroo");
+		m_btnSwitch = new JButton(TEXT_SWITCH_TO_OS_PANEL);
 		m_btnSwitch.addActionListener(this);
 		
 		GridBagConstraints cRoot = new GridBagConstraints();
@@ -197,11 +213,13 @@ public class RevealerApplet extends JApplet implements ActionListener
 			{
 				m_networkPanel.setVisible(false);
 				m_osPanel.setVisible(true);
+				m_btnSwitch.setText(TEXT_SWITCH_TO_NETWORK_PANEL);
 			}
 			else
 			{
 				m_osPanel.setVisible(false);
 				m_networkPanel.setVisible(true);
+				m_btnSwitch.setText(TEXT_SWITCH_TO_OS_PANEL);
 			}
 		}
 	}
