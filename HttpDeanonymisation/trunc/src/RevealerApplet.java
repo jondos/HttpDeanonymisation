@@ -22,35 +22,37 @@ import java.awt.event.ActionEvent;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public class RevealerApplet extends JApplet implements ActionListener 
+public class RevealerApplet extends JApplet implements ActionListener
 {
-	public String m_strExternalIPs = "";
-	public String m_strInternalIPs = "";
-	
+	public StringBuffer m_strExternalIPs = new StringBuffer();
+	public StringBuffer m_strInternalIPs = new StringBuffer();
+
 	private String m_targetURL = "/de/files/anontest/onlyip.php";
 	private int m_width = 500;
 	private int m_height = 250;
-	
+
 	private Vector m_vecExternalIPs;
 	private Vector m_vecInternalIPs;
 	private Vector m_vecInterfaces;
-	
+
 	private Font m_fNormal = new Font("Verdana", 0, 12);
 	private Font m_fHeader = new Font("Verdana", Font.BOLD, 14);
-	
+
 	private Color m_cNormal = new Color(80, 80, 80);
 	private Color m_cHeader = new Color(0, 0, 160);
 	private JPanel m_networkPanel;
 	private JPanel m_osPanel;
 	private JButton m_btnSwitch;
-	
+
 	private final static String TEXT_SWITCH_TO_OS_PANEL = "Betriebssystem-Eigenschaften anzeigen";
 	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Netzwerk-Eigenschaften anzeigen";
-	
-	public void init() 
+
+	public void init()
 	{
 		super.init();
-		
+
+                StringBuffer bufTmp;
+
 		if(this.getParameter("WIDTH") != null)
 		{
 			try
@@ -59,10 +61,10 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 			catch(NumberFormatException e)
 			{
-				
+
 			}
 		}
-		
+
 		if(this.getParameter("HEIGHT") != null)
 		{
 			try
@@ -71,35 +73,38 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 			catch(NumberFormatException e)
 			{
-				
+
 			}
 		}
-		
+
 		this.setSize(m_width, m_height);
-		
-		m_vecExternalIPs = new Vector<String>();
-		m_vecInternalIPs = new Vector<String>();
-		m_vecInterfaces = new Vector<Object[]>();
-		
+
+		//m_vecExternalIPs = new Vector<String>();
+                m_vecExternalIPs = new Vector();
+		//m_vecInternalIPs = new Vector<String>();
+                m_vecInternalIPs = new Vector();
+		//m_vecInterfaces = new Vector<Object[]>();
+                m_vecInterfaces = new Vector();
+
 		getIPs();
-	
+
 		try
 		{
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		}
 		catch(Exception e)
 		{
-			System.out.println("Error setting native Look and Feel: " + e);
+			System.err.println(new StringBuffer("Error setting native Look and Feel: ").append(e.getMessage()).toString());
 		}
-		
+
 		GridBagConstraints c = new  GridBagConstraints();
-		
+
 		JPanel rootPanel = new JPanel(new GridBagLayout());
 		rootPanel.setBackground(Color.WHITE);
 		JScrollPane scroll = new JScrollPane(rootPanel);
 		scroll.setBorder(null);
 		getContentPane().add(scroll);
-		
+
 		m_networkPanel = new JPanel(new GridBagLayout());
 		c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
@@ -113,9 +118,9 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			c.gridy++;
 			m_networkPanel.add(createLabel(m_vecExternalIPs.elementAt(i).toString()), c);
-			m_strExternalIPs += m_vecExternalIPs.elementAt(i);
+			m_strExternalIPs.append(m_vecExternalIPs.elementAt(i).toString());
 		}
-		
+
 		c.gridy++;
 		c.insets = new Insets(0, 0, 7, 0);
 		m_networkPanel.add(createHeaderLabel("Interne IP-Adressen:"), c);
@@ -124,9 +129,9 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			c.gridy++;
 			m_networkPanel.add(createLabel(m_vecInternalIPs.elementAt(i).toString()), c);
-			m_strInternalIPs += m_vecInternalIPs.elementAt(i);
+			m_strInternalIPs.append(m_vecInternalIPs.elementAt(i).toString());
 		}
-		
+
 		c.gridy++;
 		c.insets = new Insets(0, 0, 7, 0);
 		m_networkPanel.add(createHeaderLabel("Netzwerkschnittstellen:"), c);
@@ -137,16 +142,22 @@ public class RevealerApplet extends JApplet implements ActionListener
 			String name = ((Object[]) m_vecInterfaces.elementAt(i))[0].toString();
 			String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
 			c.gridy++;
-			m_networkPanel.add(createLabel((i + 1) + ". " + name), c);
+                        bufTmp = new StringBuffer();
+                        bufTmp.append((i + 1)).append(". ").append(name);
+			//m_networkPanel.add(createLabel((i + 1) + ". " + name), c);
+                        m_networkPanel.add(createLabel(bufTmp.toString()), c);
 			c.gridy++;
 			if(addr.length() != 0)
-				m_networkPanel.add(createLabel("    " + addr),c);
+                        {
+                            //m_networkPanel.add(createLabel("    " + addr), c);
+                            m_networkPanel.add(createLabel(new StringBuffer().append("    ").append(addr).toString()), c);
+                        }
 		}
-		
+
 		m_osPanel = new JPanel(new GridBagLayout());
 		m_osPanel.setBackground(Color.WHITE);
 		m_osPanel.setVisible(false);
-		
+
 		c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
@@ -154,19 +165,21 @@ public class RevealerApplet extends JApplet implements ActionListener
 		c.weighty = 0.0;
 		c.insets = new Insets(0, 0, 7, 0);
 		m_osPanel.add(createHeaderLabel("Betriebsystem:"), c);
-			
+
 		c.gridy++;
-		m_osPanel.add(createLabel(System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version") + " "), c);
-		
+
+		//m_osPanel.add(createLabel(System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version") + " "), c);
+                m_osPanel.add(createLabel(new StringBuffer().append(System.getProperty("os.name")).append(" ").append(System.getProperty("os.arch")).append(" Version ").append(System.getProperty("os.version")).append(" ").toString()), c);
+
 		c.gridy++;
 		c.insets = new Insets(0, 0, 7, 0);
 		m_osPanel.add(createHeaderLabel("Java VM:"), c);
 		c.gridy++;
-		m_osPanel.add(createLabel(System.getProperty("java.vendor") + " " + System.getProperty("java.version")), c);
-		
+		m_osPanel.add(createLabel(new StringBuffer().append(System.getProperty("java.vendor")).append(" ").append(System.getProperty("java.version")).toString()), c);
+
 		c.gridy++;
 		m_osPanel.add(createHeaderLabel("Sonstige Eigenschaften:"), c);
-		
+
 		addSystemPropertyLabel(m_osPanel, "browser", c);
 		addSystemPropertyLabel(m_osPanel, "browser.vendor", c);
 		addSystemPropertyLabel(m_osPanel, "browser.version", c);
@@ -175,27 +188,27 @@ public class RevealerApplet extends JApplet implements ActionListener
 		addSystemPropertyLabel(m_osPanel, "user.name", c);
 		addSystemPropertyLabel(m_osPanel, "user.home", c);
 		addSystemPropertyLabel(m_osPanel, "user.dir", c);
-		
+
 		m_btnSwitch = new JButton(TEXT_SWITCH_TO_OS_PANEL);
 		m_btnSwitch.addActionListener(this);
-		
+
 		GridBagConstraints cRoot = new GridBagConstraints();
-		
+
 		cRoot.anchor = GridBagConstraints.NORTHWEST;
 		cRoot.fill = GridBagConstraints.HORIZONTAL;
 		cRoot.weightx = 1.0;
 		rootPanel.add(m_networkPanel, cRoot);
-		
+
 		cRoot.gridy++;
 		rootPanel.add(m_osPanel, cRoot);
-		
+
 		cRoot.gridy++;
 		cRoot.weightx = 0.0;
 		cRoot.fill = GridBagConstraints.NONE;
 		rootPanel.add(m_btnSwitch, cRoot);
 	}
-	
-	public void start() 
+
+	public void start()
 	{
 		super.start();
 	}
@@ -228,30 +241,30 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 		}
 	}
-	
+
 	public void getIPs()
 	{
 		getIPsFromAnontest(true);
 		getIPsFromAnontest(false);
 		getIPsFromNetworkInterfaces();
 	}
-	
+
 	public void getIPsFromAnontest(boolean a_bUseSSL)
 	{
 		try
 		{
 			String host = this.getDocumentBase().getHost();
 			String sourceIP;
-			String destIP;
+			StringBuffer destIP;
 			String line;
 			Socket sock;
-			
-			if(!host.contains("jondos.de") && !host.contains("anonymix.eu"))
+
+			if(host.indexOf("jondos.de") < 0 && host.indexOf("anonymix.eu") < 0)
 			{
 				// we're running in an applet viewer
 				host = "www.anonymix.eu";
 			}
-			
+
 			if(a_bUseSSL)
 			{
 				SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
@@ -261,37 +274,37 @@ public class RevealerApplet extends JApplet implements ActionListener
 			{
 				sock = new Socket(host, 80);
 			}
-			
+
 			sourceIP = sock.getLocalAddress().getHostAddress();
-			
+
 			if(!m_vecInternalIPs.contains(sourceIP))
-			{			
+			{
 				m_vecInternalIPs.addElement(sourceIP);
 			}
-			
+
 			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 
-			writer.write("GET " + (a_bUseSSL ? "https" : "http") + "://" + host + m_targetURL + "\n\n\n");
+			writer.write(new StringBuffer().append("GET ").append(a_bUseSSL ? "https" : "http").append("://").append(host).append(m_targetURL).append("\n\n\n").toString());
 			writer.flush();
-			
-			destIP = "";
+
+			destIP = new StringBuffer();
 			while((line = reader.readLine()) != null)
 			{
-				destIP += line;
+				destIP.append(line);
 			}
-			
-			if(!m_vecExternalIPs.contains(destIP))
+
+			if(!m_vecExternalIPs.contains(destIP.toString()))
 			{
-				m_vecExternalIPs.addElement(destIP);
+				m_vecExternalIPs.addElement(destIP.toString());
 			}
 		}
 		catch(Exception e)
 		{
-			System.out.println("Getting IP addresses from anontest URL failed: " + e.getMessage());
+			System.out.println(new StringBuffer("Getting IP addresses from anontest URL failed: ").append(e.getMessage()));
 		}
 	}
-	
+
 	public void getIPsFromNetworkInterfaces()
 	{
 		try
@@ -302,22 +315,22 @@ public class RevealerApplet extends JApplet implements ActionListener
 				NetworkInterface iface = (NetworkInterface) nets.nextElement();
 				Enumeration addresses = iface.getInetAddresses();
 
-				String strAddr = "";
-				
+				StringBuffer strAddr = new StringBuffer();
+
 				while(addresses.hasMoreElements())
 				{
 					InetAddress addr = (InetAddress) addresses.nextElement();
-					
+
 					String ip = addr.getHostAddress();
-					
+
 					if(addr.isSiteLocalAddress())
 					{
 						if(!m_vecInternalIPs.contains(ip))
 						{
 							m_vecInternalIPs.addElement(ip);
-						}						
+						}
 					}
-					else if(ip.equals("127.0.0.1")) 
+					else if(ip.equals("127.0.0.1"))
 					{
 						// do nothing
 					}
@@ -326,18 +339,18 @@ public class RevealerApplet extends JApplet implements ActionListener
 						if(!m_vecExternalIPs.contains(ip))
 						{
 							m_vecExternalIPs.addElement(ip);
-						}				
+						}
 					}
-					
-					strAddr += ip + " ";
+
+					strAddr.append(ip).append(" ");
 				}
-				
-				m_vecInterfaces.addElement(new Object[] { iface.getDisplayName(), strAddr } );
+
+				m_vecInterfaces.addElement(new Object[] { iface.getDisplayName(), strAddr.toString() } );
 			}
 		}
 		catch(Exception e)
 		{
-			System.out.println("Listing network interfaces failed: " + e.getMessage());
+			System.out.println(new StringBuffer("Listing network interfaces failed: ").append(e.getMessage()).toString());
 		}
 	}
 
@@ -346,11 +359,11 @@ public class RevealerApplet extends JApplet implements ActionListener
 		try
 		{
 			a_constrains.gridy++;
-			a_panel.add(createLabel(a_strProperty + " = " + System.getProperty(a_strProperty)), a_constrains);
+			a_panel.add(createLabel(new StringBuffer().append(a_strProperty).append(" = ").append(System.getProperty(a_strProperty)).toString()), a_constrains);
 		}
 		catch(SecurityException ex)
 		{
-			System.out.println("Could not read " + a_strProperty);
+			System.out.println(new StringBuffer("Could not read ").append(a_strProperty).toString());
 		}
 	}
 
