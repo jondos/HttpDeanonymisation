@@ -21,7 +21,7 @@
     	<delete dir="${dist}"/>
     </target>
     <target depends="clean" name="cleanall"/>
-    <target depends="build-project,make-jar" name="build"/>
+    <target depends="build-project,make-jar,sign-jar" name="build"/>
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
@@ -35,9 +35,12 @@
   	    </jar>
     </target>
     <target depends="make-jar" name="sign-jar">
+		<input defaultvalue=".keystore" addproperty="keystore">Please enter the path to your keystore file</input>
+	    <input defaultvalue="anontest" addproperty="storepass">Please enter the keystore password</input>    	
+    	<input defaultvalue="codesignatur" addproperty="alias">Please enter the alias name of your code signature</input>
+    	<input defaultvalue="${storepass}" addproperty="keypass">Please enter the key password</input>
     	<echo message="signing ${ant.project.name}"/>    	
-    	<signjar jar="${dist}/${ant.project.name}.jar"
-    	alias="codesignatur" />
+    	<signjar jar="${dist}/${ant.project.name}.jar" verbose="true" alias="${alias}" storepass="${storepass}" keystore="${keystore}" keypass="${keypass}"/>
     </target>
     <target name="RevealerApplet">
         <java classname="sun.applet.AppletViewer" dir="." failonerror="true" fork="yes">
