@@ -255,7 +255,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			String host = this.getDocumentBase().getHost();
 			String sourceIP;
-			StringBuffer destIP;
+			String destIP;
 			String line;
 			Socket sock;
 
@@ -288,10 +288,10 @@ public class RevealerApplet extends JApplet implements ActionListener
 			writer.write(new StringBuffer().append("GET ").append(a_bUseSSL ? "https" : "http").append("://").append(host).append(m_targetURL).append("\n\n\n").toString());
 			writer.flush();
 
-			destIP = new StringBuffer();
+			destIP = new String();
 			while((line = reader.readLine()) != null)
 			{
-				destIP.append(line);
+				destIP += line;
 			}
 
 			if(!m_vecExternalIPs.contains(destIP.toString()))
