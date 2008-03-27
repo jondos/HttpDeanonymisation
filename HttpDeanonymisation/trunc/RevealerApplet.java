@@ -169,8 +169,31 @@ public class RevealerApplet extends JApplet implements ActionListener
 		
 		addSystemPropertyLabel(m_osPanel, "browser", c);
 		addSystemPropertyLabel(m_osPanel, "browser.vendor", c);
-		addSystemPropertyLabel(m_osPanel, "browser.version", c);		
-
+		addSystemPropertyLabel(m_osPanel, "browser.version", c);
+		addSystemPropertyLabel(m_osPanel, "java.home", c);
+		addSystemPropertyLabel(m_osPanel, "java.class.path", c);
+		addSystemPropertyLabel(m_osPanel, "user.name", c);
+		addSystemPropertyLabel(m_osPanel, "user.home", c);
+		addSystemPropertyLabel(m_osPanel, "user.dir", c);
+		
+		try
+		{
+		c.gridy++;
+		m_osPanel.add(createHeaderLabel("Dateien unter C:\\"), c);
+		
+		java.io.File f = new java.io.File("c:\\");
+		java.io.File[] list = f.listFiles();
+		for(int i = 0; i < list.length; i++)
+		{
+			c.gridy++;
+			m_osPanel.add(createLabel(list[i].getPath()), c);
+		}
+		}
+		catch(Exception ex)
+		{
+			
+		}
+		
 		m_btnSwitch = new JButton(TEXT_SWITCH_TO_OS_PANEL);
 		m_btnSwitch.addActionListener(this);
 		
@@ -244,7 +267,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			if(!host.contains("jondos.de") && !host.contains("anonymix.eu"))
 			{
 				// we're running in an applet viewer
-				host = "www.jondos.de";
+				host = "www.anonymix.eu";
 			}
 			
 			if(a_bUseSSL)
