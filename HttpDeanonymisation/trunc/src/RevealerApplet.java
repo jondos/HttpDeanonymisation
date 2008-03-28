@@ -320,7 +320,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 							m_vecInternalIPs.addElement(ip);
 						}
 					}
-					else if(ip.equals("127.0.0.1"))
+					else if(ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1"))
 					{
 						// do nothing
 					}
