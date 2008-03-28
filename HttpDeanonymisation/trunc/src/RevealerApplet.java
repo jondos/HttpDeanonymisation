@@ -144,7 +144,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 				m_networkPanel.add(createLabel("    " + addr), c);
             }
 		}
-
+		
 		m_osPanel = new JPanel(new GridBagLayout());
 		m_osPanel.setBackground(Color.WHITE);
 		m_osPanel.setVisible(false);
@@ -166,7 +166,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		m_osPanel.add(createHeaderLabel("Java VM:"), c);
 		c.gridy++;
 		m_osPanel.add(createLabel(System.getProperty("java.vendor") + " " + System.getProperty("java.version")), c);
-
+		
 		c.gridy++;
 		m_osPanel.add(createHeaderLabel("Sonstige Eigenschaften:"), c);
 
@@ -251,7 +251,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 			if(host.indexOf("jondos.de") < 0 && host.indexOf("anonymix.eu") < 0)
 			{
-				// we're running in an applet viewer
+				// we're running within an applet viewer, use the test site
 				host = "www.anonymix.eu";
 			}
 
