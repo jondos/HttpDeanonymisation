@@ -7,6 +7,8 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.URL;
+import java.net.MalformedURLException;
 import javax.net.ssl.SSLSocketFactory;
 import javax.swing.JApplet;
 import javax.swing.JPanel;
@@ -18,11 +20,13 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public class RevealerApplet extends JApplet implements ActionListener
+public class RevealerApplet extends JApplet implements ActionListener, MouseListener
 {
 	public String m_strExternalIPs;
 	public String m_strInternalIPs;
@@ -41,12 +45,15 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private Color m_cNormal = new Color(80, 80, 80);
 	private Color m_cHeader = new Color(0, 0, 160);
 	private JPanel m_networkPanel;
-	private JPanel m_osPanel;
+	private JPanel m_detailsPanel;
 	private JButton m_btnSwitch;
+	private JLabel m_lblJavaIsDangerous;
 
-	private final static String TEXT_SWITCH_TO_OS_PANEL = "Betriebssystem-Eigenschaften anzeigen";
-	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Netzwerk-Eigenschaften anzeigen";
-
+	private final static String TEXT_SWITCH_TO_DETAIL_PANEL = "Details anzeigen";
+	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Details ausblenden";
+	
+	private String m_javaIsDangerousUrl = "https://www.jondos.de/javaisdangerous";
+	
 	public void init()
 	{
 		super.init();
@@ -74,6 +81,13 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 			}
 		}
+		
+		if(this.getParameter("JAVA_IS_DANGEROUS_URL") != null)
+		{
+			String url = this.getParameter("JAVA_IS_DANGEROUS_URL");
+			if(url.startsWith("https://www.anonymix.eu") || url.startsWith("https://www.jondos.de"))
+				m_javaIsDangerousUrl = url;
+		}
 
 		this.setSize(m_width, m_height);
 
@@ -97,10 +111,12 @@ public class RevealerApplet extends JApplet implements ActionListener
 		JPanel rootPanel = new JPanel(new GridBagLayout());
 		rootPanel.setBackground(Color.WHITE);
 		JScrollPane scroll = new JScrollPane(rootPanel);
+		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scroll.setBorder(null);
 		getContentPane().add(scroll);
 
 		m_networkPanel = new JPanel(new GridBagLayout());
+		m_networkPanel.setBackground(Color.WHITE);		
 		c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
@@ -126,28 +142,10 @@ public class RevealerApplet extends JApplet implements ActionListener
 			m_networkPanel.add(createLabel(m_vecInternalIPs.elementAt(i).toString()), c);
 			m_strInternalIPs += (m_vecInternalIPs.elementAt(i));
 		}
-
-		c.gridy++;
-		c.insets = new Insets(0, 0, 7, 0);
-		m_networkPanel.add(createHeaderLabel("Netzwerkschnittstellen:"), c);
-		m_networkPanel.setBackground(Color.WHITE);
-		c.insets = new Insets(0, 0, 5, 0);
-		for(int i = 0; i < m_vecInterfaces.size(); i++)
-		{
-			String name = ((Object[]) m_vecInterfaces.elementAt(i))[0].toString();
-			String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
-			c.gridy++;
-			m_networkPanel.add(createLabel((i + 1) + ". " + name), c);
-			c.gridy++;
-			if(addr.length() != 0)
-			{
-				m_networkPanel.add(createLabel("    " + addr), c);
-            }
-		}
 		
-		m_osPanel = new JPanel(new GridBagLayout());
-		m_osPanel.setBackground(Color.WHITE);
-		m_osPanel.setVisible(false);
+		m_detailsPanel = new JPanel(new GridBagLayout());
+		m_detailsPanel.setBackground(Color.WHITE);
+		m_detailsPanel.setVisible(false);
 
 		c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
@@ -155,31 +153,45 @@ public class RevealerApplet extends JApplet implements ActionListener
 		c.weightx = 1.0;
 		c.weighty = 0.0;
 		c.insets = new Insets(0, 0, 7, 0);
-		m_osPanel.add(createHeaderLabel("Betriebsystem:"), c);
+		
+
+		c.insets = new Insets(0, 0, 7, 0);
+		m_detailsPanel.add(createHeaderLabel("Netzwerkschnittstellen:"), c);
+		c.insets = new Insets(0, 0, 5, 0);
+		for(int i = 0; i < m_vecInterfaces.size(); i++)
+		{
+			String name = ((Object[]) m_vecInterfaces.elementAt(i))[0].toString();
+			String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
+			c.gridy++;
+			m_detailsPanel.add(createLabel((i + 1) + ". " + name + " - " + addr), c);
+		}
+		
+		c.gridy++;		
+		m_detailsPanel.add(createHeaderLabel("Betriebsystem:"), c);
 
 		c.gridy++;
 
-		m_osPanel.add(createLabel(System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version") + " "), c);
+		m_detailsPanel.add(createLabel(System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version") + " "), c);
 
 		c.gridy++;
 		c.insets = new Insets(0, 0, 7, 0);
-		m_osPanel.add(createHeaderLabel("Java VM:"), c);
+		m_detailsPanel.add(createHeaderLabel("Java VM:"), c);
 		c.gridy++;
-		m_osPanel.add(createLabel(System.getProperty("java.vendor") + " " + System.getProperty("java.version")), c);
+		m_detailsPanel.add(createLabel(System.getProperty("java.vendor") + " " + System.getProperty("java.version")), c);
 		
 		c.gridy++;
-		m_osPanel.add(createHeaderLabel("Sonstige Eigenschaften:"), c);
+		m_detailsPanel.add(createHeaderLabel("Sonstige Eigenschaften:"), c);
 
-		addSystemPropertyLabel(m_osPanel, "browser", c);
-		addSystemPropertyLabel(m_osPanel, "browser.vendor", c);
-		addSystemPropertyLabel(m_osPanel, "browser.version", c);
-		addSystemPropertyLabel(m_osPanel, "java.home", c);
-		addSystemPropertyLabel(m_osPanel, "java.class.path", c);
-		addSystemPropertyLabel(m_osPanel, "user.name", c);
-		addSystemPropertyLabel(m_osPanel, "user.home", c);
-		addSystemPropertyLabel(m_osPanel, "user.dir", c);
+		addSystemPropertyLabel(m_detailsPanel, "browser", c);
+		addSystemPropertyLabel(m_detailsPanel, "browser.vendor", c);
+		addSystemPropertyLabel(m_detailsPanel, "browser.version", c);
+		addSystemPropertyLabel(m_detailsPanel, "java.home", c);
+		addSystemPropertyLabel(m_detailsPanel, "java.class.path", c);
+		addSystemPropertyLabel(m_detailsPanel, "user.name", c);
+		addSystemPropertyLabel(m_detailsPanel, "user.home", c);
+		addSystemPropertyLabel(m_detailsPanel, "user.dir", c);
 
-		m_btnSwitch = new JButton(TEXT_SWITCH_TO_OS_PANEL);
+		m_btnSwitch = new JButton(TEXT_SWITCH_TO_DETAIL_PANEL);
 		m_btnSwitch.addActionListener(this);
 
 		GridBagConstraints cRoot = new GridBagConstraints();
@@ -187,11 +199,23 @@ public class RevealerApplet extends JApplet implements ActionListener
 		cRoot.anchor = GridBagConstraints.NORTHWEST;
 		cRoot.fill = GridBagConstraints.HORIZONTAL;
 		cRoot.weightx = 1.0;
-		rootPanel.add(m_networkPanel, cRoot);
-
+		cRoot.gridy = cRoot.gridx = 0;
+		rootPanel.add(createHeaderLabel("Java ist aktiviert!"), cRoot);
+		
 		cRoot.gridy++;
-		rootPanel.add(m_osPanel, cRoot);
-
+		m_lblJavaIsDangerous = new JLabel("<html><u>Die Ausführung von Java-Applets ist gefährlich und<br> beeinträchtigt Ihre Anonymität. Weitere Informationen finden Sie hier.</u></html>");
+		m_lblJavaIsDangerous.addMouseListener(this);
+		m_lblJavaIsDangerous.setFont(m_fNormal);
+		m_lblJavaIsDangerous.setForeground(Color.blue);
+		cRoot.insets = new Insets(0, 0, 5, 0);
+		rootPanel.add(m_lblJavaIsDangerous, cRoot);
+		
+		cRoot.gridy++;
+		rootPanel.add(m_networkPanel, cRoot);
+		
+		cRoot.gridy++;
+		rootPanel.add(m_detailsPanel, cRoot);
+		
 		cRoot.gridy++;
 		cRoot.weightx = 0.0;
 		cRoot.fill = GridBagConstraints.NONE;
@@ -220,18 +244,50 @@ public class RevealerApplet extends JApplet implements ActionListener
 			if(m_networkPanel.isVisible())
 			{
 				m_networkPanel.setVisible(false);
-				m_osPanel.setVisible(true);
+				m_detailsPanel.setVisible(true);
 				m_btnSwitch.setText(TEXT_SWITCH_TO_NETWORK_PANEL);
 			}
 			else
 			{
-				m_osPanel.setVisible(false);
+				m_detailsPanel.setVisible(false);
 				m_networkPanel.setVisible(true);
-				m_btnSwitch.setText(TEXT_SWITCH_TO_OS_PANEL);
+				m_btnSwitch.setText(TEXT_SWITCH_TO_DETAIL_PANEL);
 			}
 		}
 	}
+	
+	public void mouseClicked(MouseEvent a_event)
+	{
+		if(a_event.getSource() == m_lblJavaIsDangerous)
+		{
+			try
+			{
+				this.getAppletContext().showDocument(new URL(m_javaIsDangerousUrl));
+			}
+			catch(MalformedURLException ex) { }
+		}		
+	}
+	
+	public void mousePressed(MouseEvent a_event)
+	{
+		
+	}
+	
+	public void mouseReleased(MouseEvent a_event)
+	{
+		
+	}
+	
+	public void mouseExited(MouseEvent a_event)
+	{
+		
+	}
 
+	public void mouseEntered(MouseEvent a_event)
+	{
+		
+	}	
+	
 	public void getIPs()
 	{
 		getIPsFromAnontest(true);
@@ -312,6 +368,9 @@ public class RevealerApplet extends JApplet implements ActionListener
 					InetAddress addr = (InetAddress) addresses.nextElement();
 
 					String ip = addr.getHostAddress();
+					
+					// skip ipv6 addressess
+					if(ip.length() > 16) continue;
 
 					if(addr.isSiteLocalAddress())
 					{
@@ -334,7 +393,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 					strAddr += ip + " ";
 				}
-
+				
 				m_vecInterfaces.addElement(new Object[] { iface.getDisplayName(), strAddr } );
 			}
 		}
