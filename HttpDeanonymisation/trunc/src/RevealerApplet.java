@@ -431,7 +431,7 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 
 					String ip = addr.getHostAddress();
 					
-					// skip ipv6 addressess
+					// skip ipv6 addresses
 					if(ip.length() > 16) continue;
 
 					if(addr.isSiteLocalAddress())
