@@ -10,12 +10,15 @@ import java.net.NetworkInterface;
 import java.net.URL;
 import java.net.MalformedURLException;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLSocket;
 import javax.swing.JApplet;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+
+import java.awt.Cursor;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -32,6 +35,7 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 	public String m_strInternalIPs;
 
 	private String m_targetURL = "/de/files/anontest/onlyip.php";
+	private String m_lookupURL = "/geoip/lookup.php";
 	private int m_width = 500;
 	private int m_height = 250;
 
@@ -48,6 +52,8 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 	private JPanel m_detailsPanel;
 	private JButton m_btnSwitch;
 	private JLabel m_lblJavaIsDangerous;
+	private JLabel m_lblLocation;
+	private JLabel m_lblProvider;
 
 	private final static String TEXT_SWITCH_TO_DETAIL_PANEL = "Details anzeigen";
 	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Details ausblenden";
@@ -123,18 +129,37 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		c.weightx = 1.0;
 		c.weighty = 0.0;
 		c.insets = new Insets(0, 0, 7, 0);
-		m_networkPanel.add(createHeaderLabel("Externe IP-Adressen:"), c);
+		m_networkPanel.add(createHeaderLabel("Externe IP-Adresse(n):"), c);
 		c.insets = new Insets(0, 0, 5, 0);
 		for(int i = 0; i < m_vecExternalIPs.size(); i++)
 		{
+			String ip = m_vecExternalIPs.elementAt(i).toString();
 			c.gridy++;
-			m_networkPanel.add(createLabel(m_vecExternalIPs.elementAt(i).toString()), c);
-			m_strExternalIPs += m_vecExternalIPs.elementAt(i);
+			m_networkPanel.add(createLabel("<html><b>" + ip + "</b></html>"), c);
+			String[] geoIP = getGeoIP(ip);
+			
+			if(geoIP != null) 
+			{
+				c.gridy++;
+				m_lblLocation = createLabel("<html><u>Standort: " + geoIP[0] + "</u></html>");
+				m_lblLocation.setForeground(Color.blue);
+				m_lblLocation.addMouseListener(this);
+				m_lblLocation.setToolTipText("http://www.mapquest.com/maps/map.adp?latlongtype=decimal&latitude=" + geoIP[3] + "&longitude=" + geoIP[4]);
+				m_networkPanel.add(m_lblLocation, c);
+				
+				c.gridy++;
+				m_lblProvider = createLabel("<html><u>Netzzugang: " + geoIP[1] + ", " + geoIP[2] + "</u></html>");
+				m_lblProvider.setForeground(Color.blue);
+				m_lblProvider.addMouseListener(this);
+				m_lblProvider.setToolTipText("https://www.jondos.de/whois");
+				m_networkPanel.add(m_lblProvider, c);
+			}
+			m_strExternalIPs += ip;
 		}
 
 		c.gridy++;
 		c.insets = new Insets(0, 0, 7, 0);
-		m_networkPanel.add(createHeaderLabel("Interne IP-Adressen:"), c);
+		m_networkPanel.add(createHeaderLabel("Interne IP-Adresse(n):"), c);
 		c.insets = new Insets(0, 0, 5, 0);
 		for(int i = 0; i < m_vecInternalIPs.size(); i++)
 		{
@@ -186,7 +211,6 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		addSystemPropertyLabel(m_detailsPanel, "browser.vendor", c);
 		addSystemPropertyLabel(m_detailsPanel, "browser.version", c);
 		addSystemPropertyLabel(m_detailsPanel, "java.home", c);
-		addSystemPropertyLabel(m_detailsPanel, "java.class.path", c);
 		addSystemPropertyLabel(m_detailsPanel, "user.name", c);
 		addSystemPropertyLabel(m_detailsPanel, "user.home", c);
 		addSystemPropertyLabel(m_detailsPanel, "user.dir", c);
@@ -207,6 +231,7 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		m_lblJavaIsDangerous.addMouseListener(this);
 		m_lblJavaIsDangerous.setFont(m_fNormal);
 		m_lblJavaIsDangerous.setForeground(Color.blue);
+		m_lblJavaIsDangerous.setToolTipText(m_javaIsDangerousUrl);
 		cRoot.insets = new Insets(0, 0, 5, 0);
 		rootPanel.add(m_lblJavaIsDangerous, cRoot);
 		
@@ -258,11 +283,12 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 	
 	public void mouseClicked(MouseEvent a_event)
 	{
-		if(a_event.getSource() == m_lblJavaIsDangerous)
+		if(a_event.getSource() == m_lblJavaIsDangerous || a_event.getSource() == m_lblLocation ||
+		   a_event.getSource() == m_lblProvider)
 		{
 			try
 			{
-				this.getAppletContext().showDocument(new URL(m_javaIsDangerousUrl));
+				this.getAppletContext().showDocument(new URL(((JLabel) a_event.getSource()).getToolTipText()));
 			}
 			catch(MalformedURLException ex) { }
 		}		
@@ -285,7 +311,11 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 
 	public void mouseEntered(MouseEvent a_event)
 	{
-		
+		if(a_event.getSource() == m_lblJavaIsDangerous || a_event.getSource() == m_lblLocation ||
+		  a_event.getSource() == m_lblProvider)
+		{
+			((JLabel)a_event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		}
 	}	
 	
 	public void getIPs()
@@ -349,6 +379,38 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		{
 			System.out.println("Getting IP addresses from anontest URL failed: " + e.getMessage());
 		}
+	}
+	
+	public String[] getGeoIP(String ip)
+	{
+		String host = this.getDocumentBase().getHost();
+		String[] geoip = new String[5];
+		
+		if(host.indexOf("jondos.de") < 0 && host.indexOf("anonymix.eu") < 0)
+		{
+			// we're running within an applet viewer, use the test site
+			host = "www.anonymix.eu";
+		}
+		
+		try
+		{
+			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			SSLSocket sock = (SSLSocket) factory.createSocket(host, 443);
+		
+			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+
+			writer.write("GET https://" + host + m_lookupURL + "?ip=" + ip +  "\n\n\n");
+			writer.flush();
+
+			for(int i = 0; i < geoip.length; i++)
+			{
+				geoip[i] = reader.readLine();
+			}
+		}
+		catch(Exception ex) {}
+		
+		return geoip;
 	}
 
 	public void getIPsFromNetworkInterfaces()
