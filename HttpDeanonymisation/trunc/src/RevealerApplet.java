@@ -7,8 +7,6 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.URL;
-import java.net.MalformedURLException;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.SSLSocket;
 import java.net.InetAddress;
@@ -18,24 +16,18 @@ import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import javax.swing.BorderFactory;
 import javax.swing.border.MatteBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.JTable;
-import java.awt.Cursor;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
+import java.awt.Component;
+import java.awt.Rectangle;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public class RevealerApplet extends JApplet implements ActionListener, MouseListener
+public class RevealerApplet extends JApplet implements ActionListener
 {
 	public String m_strExternalIPs;
 	public String m_strInternalIPs;
@@ -49,25 +41,17 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 	private Vector m_vecInternalIPs;
 	private Vector m_vecInterfaces;
 
-	private Font m_fNormal = new Font("Verdana", 0, 13);
-	private Font m_fHeader = new Font("Verdana", Font.BOLD, 14);
-
-	private Color m_cNormal = new Color(60, 60, 60);
-	private Color m_cHeader = new Color(0, 0, 160);
 	private JPanel m_networkPanel;
 	private JPanel m_detailsPanel;
 	private JButton m_btnSwitch;
-	private JLabel m_lblJavaIsDangerous;
-	private JLabel m_lblLocation;
-	private JLabel m_lblProvider;
-	
-	private MatteBorder m_border;
-	private MatteBorder m_2ndColumnBorder;
+	JLabel m_lblJavaIsDangerous;
+	JLabel m_lblLocation;
+	JLabel m_lblProvider;
 	
 	private String m_discoveredIP;
 
-	private final static String TEXT_SWITCH_TO_DETAIL_PANEL = "Details anzeigen";
-	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Details ausblenden";
+	private final static String TEXT_SWITCH_TO_DETAIL_PANEL = "Details";
+	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Zurück";
 	
 	private String m_javaIsDangerousUrl = "https://www.jondos.de/javaisdangerous";
 	
@@ -75,11 +59,11 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 	{
 		super.init();
 
-		if(this.getParameter("WIDTH") != null)
+		if(getParameter("WIDTH") != null)
 		{
 			try
 			{
-				m_width = Integer.parseInt(this.getParameter("WIDTH"));
+				m_width = Integer.parseInt(getParameter("WIDTH"));
 			}
 			catch(NumberFormatException e)
 			{
@@ -87,11 +71,11 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 			}
 		}
 
-		if(this.getParameter("HEIGHT") != null)
+		if(getParameter("HEIGHT") != null)
 		{
 			try
 			{
-				m_height = Integer.parseInt(this.getParameter("HEIGHT"));
+				m_height = Integer.parseInt(getParameter("HEIGHT"));
 			}
 			catch(NumberFormatException e)
 			{
@@ -99,16 +83,16 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 			}
 		}
 		
-		if(this.getParameter("JAVA_IS_DANGEROUS_URL") != null)
+		if(getParameter("JAVA_IS_DANGEROUS_URL") != null)
 		{
-			String url = this.getParameter("JAVA_IS_DANGEROUS_URL");
+			String url = getParameter("JAVA_IS_DANGEROUS_URL");
 			if(url.startsWith("https://www.anonymix.eu") || url.startsWith("https://www.jondos.de"))
 				m_javaIsDangerousUrl = url;
 		}
 		
-		m_discoveredIP = this.getParameter("DISCOVERED_IP");
+		m_discoveredIP = getParameter("DISCOVERED_IP");
 
-		this.setSize(m_width, m_height);
+		setSize(m_width, m_height);
 
 		m_vecExternalIPs = new Vector();
 		m_vecInternalIPs = new Vector();
@@ -165,52 +149,9 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 			}
 		}
 	}
-	
-	public void mouseClicked(MouseEvent a_event)
-	{
-		if(a_event.getSource() == m_lblJavaIsDangerous || a_event.getSource() == m_lblLocation ||
-		   a_event.getSource() == m_lblProvider)
-		{
-			try
-			{
-				this.getAppletContext().showDocument(new URL(((JLabel) a_event.getSource()).getToolTipText()), "_blank");
-			}
-			catch(MalformedURLException ex) { }
-		}
-		
-		if(a_event.getSource() instanceof javax.swing.JTable)
-		{
-			javax.swing.JTable tbl = (javax.swing.JTable) a_event.getSource();
-			Point pt = new Point(a_event.getX(), a_event.getY());
-			int col = tbl.columnAtPoint(pt);
-			int row = tbl.rowAtPoint(pt);
-			String value = tbl.getValueAt(row, col).toString();
-		}
-	}
-	
-	public void mousePressed(MouseEvent a_event)
-	{
-		
-	}
-	
-	public void mouseReleased(MouseEvent a_event)
-	{
-		
-	}
-	
-	public void mouseExited(MouseEvent a_event)
-	{
-		
-	}
 
-	public void mouseEntered(MouseEvent a_event)
-	{
-		if(a_event.getSource() == m_lblJavaIsDangerous || a_event.getSource() == m_lblLocation ||
-		  a_event.getSource() == m_lblProvider)
-		{
-			((JLabel)a_event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		}
-	}	
+	
+	
 	
 	public void getIPs()
 	{
@@ -223,7 +164,7 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 	{
 		try
 		{
-			String host = this.getDocumentBase().getHost();
+			String host = getDocumentBase().getHost();
 			String sourceIP;
 			String destIP;
 			String line;
@@ -277,8 +218,8 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 	
 	public String[] getGeoIP(String ip)
 	{
-		String host = this.getDocumentBase().getHost();
-		String[] geoip = new String[5];
+		String host = getDocumentBase().getHost();
+		String[] geoip = new String[6];
 		
 		if(host.indexOf("jondos.de") < 0 && host.indexOf("anonymix.eu") < 0)
 		{
@@ -290,10 +231,10 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		{
 			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 			SSLSocket sock = (SSLSocket) factory.createSocket(host, 443);
-		
+			
 			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
-
+			
 			writer.write("GET https://" + host + m_lookupURL + "?ip=" + ip +  "\n\n\n");
 			writer.flush();
 
@@ -359,62 +300,18 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		}
 	}
 
-	private void addSystemPropertyLabel(JPanel a_panel, String a_strProperty, GridBagConstraints a_constrains)
+	private void addSystemProperty(AnonPropertyTable a_table, String a_strProperty, int a_rating)
 	{
 		try
 		{
-			a_constrains.gridy++;
-			a_panel.add(createBox(a_strProperty + " = " + System.getProperty(a_strProperty)), a_constrains);
+			a_table.add(new AnonProperty(a_strProperty, System.getProperty(a_strProperty), a_rating));
 		}
 		catch(SecurityException ex)
 		{
 			System.out.println("Could not read " + a_strProperty);
 		}
 	}
-
-	private JLabel createHeaderLabel(String a_strLabel)
-	{
-		JLabel lbl = new JLabel(a_strLabel);
-		lbl.setFont(m_fHeader);
-		lbl.setForeground(m_cHeader);
-		return lbl;
-	}
-
-	private JLabel createBox(String a_strLabel)
-	{
-		return createBox(a_strLabel, false);
-	}
 	
-	private JLabel createBox(String a_strLabel, boolean a_is2ndColumn)
-	{
-		JLabel lbl = new JLabel(a_strLabel);
-		lbl.setFont(m_fNormal);
-		lbl.setForeground(m_cNormal);
-		lbl.setBorder(a_is2ndColumn ? m_2ndColumnBorder : m_border);
-		return lbl;
-	}
-	
-	private JLabel createBox(String a_strLabel, Color a_bkColor)
-	{
-		JLabel lbl = createBox(a_strLabel);
-		if(a_bkColor != null)
-		{
-			lbl.setOpaque(true);
-			lbl.setBackground(a_bkColor);
-		}	
-		return lbl;
-	}
-	
-	private JLabel createBox(String a_strLabel, String a_url, boolean a_is2ndColumn)
-	{
-		JLabel lbl = createBox(a_strLabel, a_is2ndColumn);
-		lbl.addMouseListener(this);
-		lbl.setForeground(Color.blue);
-		lbl.setToolTipText(a_url);
-		
-		return lbl;
-	}
-
 	private void createRootPanel() 
 	{
 		JPanel rootPanel = new JPanel(new GridBagLayout());
@@ -427,23 +324,20 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		GridBagConstraints cRoot = new GridBagConstraints();
 		cRoot.gridy = 0;
 		cRoot.gridx = 0;
-		cRoot.gridwidth = 2;
 		cRoot.weightx = 0.0;
-		cRoot.fill = GridBagConstraints.NONE;
-		cRoot.ipadx = cRoot.ipady = 0;
-		cRoot.insets = new Insets(5, 5, 5, 5);
+		cRoot.fill = GridBagConstraints.HORIZONTAL;
+		cRoot.insets = new Insets(5, 5, 5, 0);
 		
+		AnonPropertyTable table = new AnonPropertyTable(this, true);
+		table.add(new AnonProperty("Java aktiviert!", "Java beeinträchtigt Ihre Anonymität!", AnonProperty.RATING_BAD));
+		
+		rootPanel.add(table, cRoot);
+		
+		cRoot.fill = GridBagConstraints.NONE;
+		cRoot.gridx++;
 		m_btnSwitch = new JButton(TEXT_SWITCH_TO_DETAIL_PANEL);
 		m_btnSwitch.addActionListener(this);
 		rootPanel.add(m_btnSwitch, cRoot);
-		
-		AnonPropertyTable table = new AnonPropertyTable(this);
-		table.add(new AnonProperty("Java aktiviert!", "Java beeinträchtigt Ihre Anonymität!", "Mehr Infos", "www.bistdudoof.de", AnonProperty.RATING_BAD));
-		
-		cRoot.gridy++;
-		cRoot.fill = GridBagConstraints.HORIZONTAL;
-		cRoot.weightx = 1.0;
-		rootPanel.add(table, cRoot);
 		
 		createNetworkPanel();
 		createDetailsPanel();
@@ -451,6 +345,10 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		cRoot.gridx = 0;
 		cRoot.gridy++;
 		cRoot.gridwidth = 2;
+		cRoot.weighty = 1;
+		cRoot.weightx = 1;
+		cRoot.fill = GridBagConstraints.BOTH;
+		cRoot.anchor = GridBagConstraints.NORTHWEST;
 		rootPanel.add(m_networkPanel, cRoot);
 		
 		cRoot.gridy++;
@@ -467,45 +365,48 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
+		c.gridx = 0;
 		c.weightx = 1.0;
 		c.weighty = 0.0;
-		c.insets = new Insets(0, 0, 7, 0);
-		
-	
-		c.insets = new Insets(0, 0, 7, 0);
-		m_detailsPanel.add(createHeaderLabel("Netzwerkschnittstellen:"), c);
 		c.insets = new Insets(0, 0, 5, 0);
+		
+		AnonPropertyTable table = new AnonPropertyTable(this, true);
+		table.setWidth(0, 140);
+		table.setWidth(1, 430);
+		table.add(new AnonProperty("Betriebssystem", System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
+		table.add(new AnonProperty("Java VM", System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
+		m_detailsPanel.add(table, c);
+				
+		table = new AnonPropertyTable(this, true);
+		table.setWidth(0, 140);
+		table.setWidth(1, 430);
+		table.add(new AnonProperty("IP-Adresse", "Netzwerkschnitstelle", AnonProperty.RATING_NONE));
+		
 		for(int i = 0; i < m_vecInterfaces.size(); i++)
 		{
 			String name = ((Object[]) m_vecInterfaces.elementAt(i))[0].toString();
 			String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
-			c.gridy++;
-			m_detailsPanel.add(createBox((i + 1) + ". " + name + " - " + addr), c);
+			table.add(new AnonProperty(addr, name, AnonProperty.RATING_NONE));
 		}
 		
-		c.gridy++;		
-		m_detailsPanel.add(createHeaderLabel("Betriebsystem:"), c);
-	
 		c.gridy++;
-	
-		m_detailsPanel.add(createBox(System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version") + " "), c);
-	
-		c.gridy++;
-		c.insets = new Insets(0, 0, 7, 0);
-		m_detailsPanel.add(createHeaderLabel("Java VM:"), c);
-		c.gridy++;
-		m_detailsPanel.add(createBox(System.getProperty("java.vendor") + " " + System.getProperty("java.version")), c);
+		m_detailsPanel.add(table, c);
+		
+		table = new AnonPropertyTable(this, true);
+		table.setWidth(0, 140);
+		table.setWidth(1, 430);
+		addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
+		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
+		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);
+		addSystemProperty(table, "java.home", AnonProperty.RATING_BAD);
+		addSystemProperty(table, "user.dir", AnonProperty.RATING_BAD);
+		addSystemProperty(table, "user.name", AnonProperty.RATING_BAD);
+		addSystemProperty(table, "user.home", AnonProperty.RATING_BAD);
+
 		
 		c.gridy++;
-		m_detailsPanel.add(createHeaderLabel("Sonstige Eigenschaften:"), c);
-	
-		addSystemPropertyLabel(m_detailsPanel, "browser", c);
-		addSystemPropertyLabel(m_detailsPanel, "browser.vendor", c);
-		addSystemPropertyLabel(m_detailsPanel, "browser.version", c);
-		addSystemPropertyLabel(m_detailsPanel, "java.home", c);
-		addSystemPropertyLabel(m_detailsPanel, "user.name", c);
-		addSystemPropertyLabel(m_detailsPanel, "user.home", c);
-		addSystemPropertyLabel(m_detailsPanel, "user.dir", c);
+		c.weighty = 1.0;
+		m_detailsPanel.add(table, c);
 	}
 
 	private void createNetworkPanel() 
@@ -521,13 +422,15 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 		c.weighty = 0.0;
 		c.insets = new Insets(0, 0, 5, 0);
 		
+		AnonPropertyTable table;
+		
 		for(int i = 0; i < m_vecExternalIPs.size(); i++)
 		{
 			String ip = m_vecExternalIPs.elementAt(i).toString();
 			
 			if(m_discoveredIP != null && m_discoveredIP.equals(ip)) continue;
 			
-			AnonPropertyTable table = new AnonPropertyTable(this);
+			table = new AnonPropertyTable(this, false);
 			
 			table.add(new AnonProperty("IP-Addresse", ip, AnonProperty.RATING_BAD));
 			
@@ -537,236 +440,28 @@ public class RevealerApplet extends JApplet implements ActionListener, MouseList
 			{
 				table.add(new AnonProperty("Standort", geoIP[0], "Karte", "http://www.mapquest.com/maps/map.adp?latlongtype=decimal&latitude=" + geoIP[3] + "&longitude=" + geoIP[4], AnonProperty.RATING_NONE));
 				table.add(new AnonProperty("Netzzugang", geoIP[1] + ", " + geoIP[2], "Whois IP", "https://www.jondos.de/whois", AnonProperty.RATING_NONE));
+				if(!geoIP[5].equals(ip)) 
+				{
+					table.add(new AnonProperty("Reverse DNS", geoIP[5], "Whois Domain", "https://www.jondos.de/whois?domain=1", AnonProperty.RATING_NONE));
+				}
 			}
-			
-			try
-			{
-				
-			
-			InetAddress addr = InetAddress.getByName(ip);
-			table.add(new AnonProperty("Reverse DNS:", addr.getHostName(), AnonProperty.RATING_NONE));
-			}
-			catch(Exception ex) { ex.printStackTrace(); }
+	
+			c.gridy++;
 			m_strExternalIPs += ip;
 			m_networkPanel.add(table, c);
-			c.gridy++;
 		}
 	
 		c.insets = new Insets(0, 0, 5, 0);
-		AnonPropertyTable table = new AnonPropertyTable(this);
+		c.weighty = 1.0;
+		table = new AnonPropertyTable(this, true);
+		table.setWidth(1, 460);
 		for(int i = 0; i < m_vecInternalIPs.size(); i++)
 		{
 			table.add(new AnonProperty("Interne IP", m_vecInternalIPs.elementAt(i).toString(), AnonProperty.RATING_OKISH));
 
 			m_strInternalIPs += (m_vecInternalIPs.elementAt(i));
 		}
-		c.gridy++;		
+		c.gridy++;
 		m_networkPanel.add(table, c);		
-	}
-	
-	class AnonPropertyCellRenderer extends DefaultTableCellRenderer
-	{
-		public void setValue(Object value)
-		{
-			setFont(m_fNormal);
-			setForeground(m_cNormal);
-			setBackground(Color.white);
-			setToolTipText("");
-			
-			if(value == null)
-			{
-				setText("");
-				return;
-			}
-			
-			if(value instanceof AnonProperty)
-			{
-				setBackground(((AnonProperty)value).getRatingColor());
-				if(((AnonProperty)value).m_rating != AnonProperty.RATING_NONE) 
-				setForeground(Color.black);
-			}
-			else if(value instanceof AnonPropertyAction)
-			{
-				setForeground(m_cHeader);
-				setToolTipText(((AnonPropertyAction) value).m_strUrl);
-			}
-			
-			setText(" " + value.toString());			
-		}
-	}
-	
-	class AnonPropertyTable extends JTable
-	{
-		private AnonPropertyTableModel m_model;
-		private AnonPropertyCellRenderer m_cellRenderer;
-		
-		public AnonPropertyTable(RevealerApplet a_parent)
-		{
-			m_model = new AnonPropertyTableModel();
-			m_cellRenderer = new AnonPropertyCellRenderer();
-			setModel(m_model);
-			setBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, new Color(196, 196, 196)));
-			setDefaultRenderer(String.class, m_cellRenderer);
-			setDefaultRenderer(AnonProperty.class, m_cellRenderer);
-			setDefaultRenderer(AnonPropertyAction.class, m_cellRenderer);
-			setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			setRowHeight(23);
-			
-			this.getColumnModel().getColumn(0).setPreferredWidth(120);
-			this.getColumnModel().getColumn(1).setPreferredWidth(350);
-			this.getColumnModel().getColumn(2).setPreferredWidth(100);
-			setGridColor(new Color(196, 196, 196));
-			
-			setEnabled(false);
-			
-			addMouseListener(a_parent);			
-		}
-
-		public void add(AnonProperty a_prop)
-		{
-			m_model.add(a_prop);
-		}
-	}
-	
-	class AnonPropertyTableModel extends AbstractTableModel
-	{
-		private Vector m_properties = new Vector();
-		
-		/**
-		 * The column names
-		 */
-		protected String columnNames[] = new String[] { "Eigenschaft", "Wert", "Aktion" };
-		
-		/**
-		 * The column classes
-		 */
-		protected Class columnClasses[] = new Class[] { AnonProperty.class, String.class, AnonPropertyAction.class };
-		
-		/**
-		 * The last column will either display an action or the rating of the property
-		 */
-		private boolean m_bDisplayAction = false;
-		
-		public int getRowCount()
-		{
-			return m_properties.size();
-		}
-		
-		public int getColumnCount()
-		{
-			return columnNames.length;
-		}
-		
-		public boolean isCellEditable(int rowIndex, int columnIndex)
-		{
-			return false;
-		}
-		
-		public Class getColumnClass(int columnIndex)
-		{
-			return columnClasses[columnIndex];
-		}
-
-		public String getColumnName(int columnIndex)
-		{
-			return columnNames[columnIndex];
-		}
-		
-		public synchronized void add(AnonProperty a_prop)
-		{
-			m_properties.addElement(a_prop);
-		}
-		
-		public Object getValueAt(int rowIndex, int columnIndex)
-		{
-			try
-			{
-				AnonProperty prop = (AnonProperty) m_properties.elementAt(rowIndex);
-				if(columnIndex == 0)
-				{
-					return prop;
-				}
-				
-				if(columnIndex == 1)
-				{
-					return prop.m_strValue;
-				}
-				
-				if(columnIndex == 2)
-				{
-					return prop.m_action;
-				}
-				
-			}
-			catch(Exception ex) { }
-			
-			return null;
-		}
-	}
-
-	class AnonProperty
-	{
-		private String m_strName;
-		private String m_strValue;
-		private AnonPropertyAction m_action;
-		private int m_rating;
-		
-		public final static int RATING_NONE = 0;
-		public final static int RATING_GOOD = 1;
-		public final static int RATING_BAD = 2;
-		public final static int RATING_OKISH = 3;
-		
-		public AnonProperty(String a_strName, String a_strValue, int a_rating)
-		{
-			m_strName = a_strName;
-			m_strValue = a_strValue;
-			m_rating = a_rating;
-		}
-		
-		public AnonProperty(String a_strName, String a_strValue, String a_strAction, String a_strActionUrl, int a_rating)
-		{
-			m_strName = a_strName;
-			m_strValue = a_strValue;
-			m_action = new AnonPropertyAction(a_strAction, a_strActionUrl);
-			m_rating = a_rating;
-		}
-		
-		public Color getRatingColor()
-		{
-			switch(m_rating)
-			{
-			default:
-			case RATING_NONE:
-				return Color.white;
-			case RATING_BAD:
-				return Color.red;
-			case RATING_OKISH:
-				return Color.orange;
-			case RATING_GOOD:
-				return Color.green;
-			}
-		}
-		
-		public String toString()
-		{
-			return m_strName;
-		}
-	}
-	
-	class AnonPropertyAction
-	{
-		private String m_strName;
-		private String m_strUrl;
-		
-		public AnonPropertyAction(String a_strName, String a_strUrl)
-		{
-			m_strName = a_strName;
-			m_strUrl = a_strUrl;
-		}
-		
-		public String toString()
-		{
-			return m_strName;
-		}
-	}
+	} 
 }
