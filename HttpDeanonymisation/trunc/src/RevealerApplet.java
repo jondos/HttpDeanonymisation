@@ -36,7 +36,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private Vector m_vecInternalIPs;
 	private Vector m_vecInterfaces;
 
-	private JPanel m_networkPanel;
+	private JPanel m_StartPanel;
 	private JPanel m_detailsPanel;
 	private JButton m_btnSwitch;
 	JLabel m_lblJavaIsDangerous;
@@ -104,11 +104,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			System.err.println("Error setting native Look and Feel: " + e.getMessage());
 		}
 
-		GridBagConstraints c = new GridBagConstraints();
-
 		createRootPanel();
-		
-
 	}
 
 	public void start()
@@ -130,23 +126,20 @@ public class RevealerApplet extends JApplet implements ActionListener
 	{
 		if(a_event.getSource() == m_btnSwitch)
 		{
-			if(m_networkPanel.isVisible())
+			if(m_StartPanel.isVisible())
 			{
-				m_networkPanel.setVisible(false);
+				m_StartPanel.setVisible(false);
 				m_detailsPanel.setVisible(true);
 				m_btnSwitch.setText(TEXT_SWITCH_TO_NETWORK_PANEL);
 			}
 			else
 			{
 				m_detailsPanel.setVisible(false);
-				m_networkPanel.setVisible(true);
+				m_StartPanel.setVisible(true);
 				m_btnSwitch.setText(TEXT_SWITCH_TO_DETAIL_PANEL);
 			}
 		}
 	}
-
-	
-	
 	
 	public void getIPs()
 	{
@@ -262,7 +255,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 					String ip = addr.getHostAddress();
 					
 					// skip ipv6 addresses
-					if(ip.length() > 16) continue;
+					if(ip.length() > 16 || ip.equals("0:0:0:0:0:0:0:1")) continue;
 
 					if(addr.isSiteLocalAddress())
 					{
@@ -273,7 +266,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 					}
 					else if(ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1"))
 					{
-						// do nothing
+						// skip localhost
 					}
 					else
 					{
@@ -334,7 +327,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		m_btnSwitch.addActionListener(this);
 		rootPanel.add(m_btnSwitch, cRoot);
 		
-		createNetworkPanel();
+		createStartPanel();
 		createDetailsPanel();
 		
 		cRoot.gridx = 0;
@@ -344,7 +337,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		cRoot.weightx = 1;
 		cRoot.fill = GridBagConstraints.BOTH;
 		cRoot.anchor = GridBagConstraints.NORTHWEST;
-		rootPanel.add(m_networkPanel, cRoot);
+		rootPanel.add(m_StartPanel, cRoot);
 		
 		cRoot.gridy++;
 		rootPanel.add(m_detailsPanel, cRoot);
@@ -352,12 +345,11 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 	private void createDetailsPanel() 
 	{
-		GridBagConstraints c;
 		m_detailsPanel = new JPanel(new GridBagLayout());
 		m_detailsPanel.setBackground(Color.WHITE);
 		m_detailsPanel.setVisible(false);
 	
-		c = new GridBagConstraints();
+		GridBagConstraints c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
 		c.gridx = 0;
@@ -403,12 +395,11 @@ public class RevealerApplet extends JApplet implements ActionListener
 		m_detailsPanel.add(table, c);
 	}
 
-	private void createNetworkPanel() 
+	private void createStartPanel() 
 	{
-		GridBagConstraints c;
-		m_networkPanel = new JPanel(new GridBagLayout());
-		m_networkPanel.setBackground(Color.WHITE);		
-		c = new GridBagConstraints();
+		m_StartPanel = new JPanel(new GridBagLayout());
+		m_StartPanel.setBackground(Color.WHITE);		
+		GridBagConstraints c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
 		c.gridx = 0;
@@ -442,7 +433,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	
 			c.gridy++;
 			m_strExternalIPs += ip;
-			m_networkPanel.add(table, c);
+			m_StartPanel.add(table, c);
 		}
 	
 		c.insets = new Insets(0, 0, 5, 0);
@@ -456,6 +447,6 @@ public class RevealerApplet extends JApplet implements ActionListener
 			m_strInternalIPs += (m_vecInternalIPs.elementAt(i));
 		}
 		c.gridy++;
-		m_networkPanel.add(table, c);		
+		m_StartPanel.add(table, c);		
 	} 
 }
