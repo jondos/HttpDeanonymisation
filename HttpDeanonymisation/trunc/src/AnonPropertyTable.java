@@ -52,7 +52,7 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 				setToolTipText(((AnonPropertyAction) value).getUrl());
 			}
 			
-			setText(" " + value.toString());			
+			setText((value.toString().startsWith("<html>") ? "" : " ") + value.toString());			
 		}
 	}
 
