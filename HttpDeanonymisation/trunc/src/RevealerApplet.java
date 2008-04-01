@@ -1,5 +1,4 @@
 import java.awt.Color;
-import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
@@ -9,21 +8,17 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.SSLSocket;
-import java.net.InetAddress;
 import javax.swing.JApplet;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import javax.swing.border.MatteBorder;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.Component;
-import java.awt.Rectangle;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -402,7 +397,6 @@ public class RevealerApplet extends JApplet implements ActionListener
 		addSystemProperty(table, "user.dir", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.name", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.home", AnonProperty.RATING_BAD);
-
 		
 		c.gridy++;
 		c.weighty = 1.0;
