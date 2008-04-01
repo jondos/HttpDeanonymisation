@@ -36,7 +36,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private Vector m_vecInternalIPs;
 	private Vector m_vecInterfaces;
 
-	private JPanel m_StartPanel;
+	private JPanel m_startPanel;
 	private JPanel m_detailsPanel;
 	private JButton m_btnSwitch;
 	JLabel m_lblJavaIsDangerous;
@@ -126,16 +126,16 @@ public class RevealerApplet extends JApplet implements ActionListener
 	{
 		if(a_event.getSource() == m_btnSwitch)
 		{
-			if(m_StartPanel.isVisible())
+			if(m_startPanel.isVisible())
 			{
-				m_StartPanel.setVisible(false);
+				m_startPanel.setVisible(false);
 				m_detailsPanel.setVisible(true);
 				m_btnSwitch.setText(TEXT_SWITCH_TO_NETWORK_PANEL);
 			}
 			else
 			{
 				m_detailsPanel.setVisible(false);
-				m_StartPanel.setVisible(true);
+				m_startPanel.setVisible(true);
 				m_btnSwitch.setText(TEXT_SWITCH_TO_DETAIL_PANEL);
 			}
 		}
@@ -314,11 +314,10 @@ public class RevealerApplet extends JApplet implements ActionListener
 		cRoot.gridx = 0;
 		cRoot.weightx = 0.0;
 		cRoot.fill = GridBagConstraints.HORIZONTAL;
-		cRoot.insets = new Insets(5, 5, 5, 0);
+		cRoot.insets = new Insets(5, 5, 5, 10);
 		
 		AnonPropertyTable table = new AnonPropertyTable(this, true);
 		table.add(new AnonProperty("Java aktiviert!", "Java beeinträchtigt Ihre Anonymität!", AnonProperty.RATING_BAD));
-		
 		rootPanel.add(table, cRoot);
 		
 		cRoot.fill = GridBagConstraints.NONE;
@@ -326,7 +325,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		m_btnSwitch = new JButton(TEXT_SWITCH_TO_DETAIL_PANEL);
 		m_btnSwitch.addActionListener(this);
 		rootPanel.add(m_btnSwitch, cRoot);
-		
+
 		createStartPanel();
 		createDetailsPanel();
 		
@@ -337,7 +336,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		cRoot.weightx = 1;
 		cRoot.fill = GridBagConstraints.BOTH;
 		cRoot.anchor = GridBagConstraints.NORTHWEST;
-		rootPanel.add(m_StartPanel, cRoot);
+		cRoot.insets = new Insets(5, 5, 5, 0);
+		rootPanel.add(m_startPanel, cRoot);
 		
 		cRoot.gridy++;
 		rootPanel.add(m_detailsPanel, cRoot);
@@ -397,8 +397,9 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 	private void createStartPanel() 
 	{
-		m_StartPanel = new JPanel(new GridBagLayout());
-		m_StartPanel.setBackground(Color.WHITE);		
+		m_startPanel = new JPanel(new GridBagLayout());
+		m_startPanel.setBackground(Color.WHITE);
+		
 		GridBagConstraints c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
@@ -407,7 +408,24 @@ public class RevealerApplet extends JApplet implements ActionListener
 		c.weighty = 0.0;
 		c.insets = new Insets(0, 0, 5, 0);
 		
-		AnonPropertyTable table;
+		AnonPropertyTable table = new AnonPropertyTable(this, true);
+		table.setRowHeight(40);
+		table.setWidth(1, 460);		
+		try
+		{
+			// this will cause a security exception on untrusted applets
+			System.getProperties();
+			table.add(new AnonProperty("<html>&nbsp;Applet<br>&nbsp;vertraut</html>", "<html>&nbsp;Sie haben dem signierten Applet vertraut, " + System.getProperty("user.name") + "! Ein böshaftes<br>&nbsp;Applet hätte nun vollen Zugriff auf ihren PC!</html>", AnonProperty.RATING_BAD));
+		}
+		catch(Exception ex)
+		{
+			//table.add(new AnonProperty("<html>Applet <br>nicht vertraut</html>", "Sie haben dem Applet nicht vertraut, es hat also nur", AnonProperty.RATING_OKISH));
+		}
+		
+		c.gridx = 0;
+		c.gridy++;
+		c.gridwidth = 2;
+		m_startPanel.add(table, c);
 		
 		for(int i = 0; i < m_vecExternalIPs.size(); i++)
 		{
@@ -433,7 +451,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	
 			c.gridy++;
 			m_strExternalIPs += ip;
-			m_StartPanel.add(table, c);
+			m_startPanel.add(table, c);
 		}
 	
 		c.insets = new Insets(0, 0, 5, 0);
@@ -447,6 +465,6 @@ public class RevealerApplet extends JApplet implements ActionListener
 			m_strInternalIPs += (m_vecInternalIPs.elementAt(i));
 		}
 		c.gridy++;
-		m_StartPanel.add(table, c);		
+		m_startPanel.add(table, c);		
 	} 
 }
