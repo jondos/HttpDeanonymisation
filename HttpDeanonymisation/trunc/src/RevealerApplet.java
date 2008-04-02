@@ -39,7 +39,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 	private Vector m_vecExternalIPs;
 	private Vector m_vecInternalIPs;
 	private Vector m_vecInterfaces;
-	
+
 	private JPanel m_startPanel;
 	private JPanel m_detailsPanel;
 	private JButton m_btnSwitch;
@@ -58,7 +58,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 	{
 		resize(width, height);
 	}
-	
+
 	public void init()
 	{
 		super.init();
@@ -94,7 +94,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 				m_javaIsDangerousUrl = url;
 		}
 
-			
+
 		m_discoveredIP = getParameter("DISCOVERED_IP");
 
 		setSize(m_width, m_height);
@@ -115,7 +115,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		}
 
 		createRootPanel();
-		
+
 
 	}
 
@@ -204,9 +204,9 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 			{
 				destIP += line;
 			}
-			
+
 			if(m_discoveredIP != null && m_discoveredIP.equals(destIP)) return;
-			
+
 			// simple check to see if we have a valid ip address
 			// if it's an invalid ip it will throw an exception
 			InetAddress.getByName(destIP);
@@ -243,7 +243,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 
 			writer.write("GET https://" + host + m_lookupURL + "?ip=" + ip +  "\n\n\n");
 			writer.flush();
-			
+
 			for(int i = 0; i < geoip.length; i++)
 			{
 				geoip[i] = reader.readLine();
@@ -332,11 +332,11 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		cRoot.gridx = 0;
 		cRoot.weightx = 0.0;
 		cRoot.fill = GridBagConstraints.HORIZONTAL;
-		cRoot.anchor = GridBagConstraints.NORTHWEST;	
+		cRoot.anchor = GridBagConstraints.NORTHWEST;
 		cRoot.insets = new Insets(5, 5, 5, 10);
 
 		AnonPropertyTable table = new AnonPropertyTable(this, true);
-		table.add(new AnonProperty("Java aktiviert!", "Java beeintr\u00e4chtigt Ihre Anonymit\u00e4t!", AnonProperty.RATING_BAD));
+		table.add(new AnonProperty("Java aktiviert!", "Java im Browser beeintr\u00e4chtigt Ihre Anonymit\u00e4t!", AnonProperty.RATING_BAD));
 		rootPanel.add(table, cRoot);
 
 		cRoot.fill = GridBagConstraints.NONE;
@@ -344,7 +344,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		m_btnSwitch = new JButton(TEXT_SWITCH_TO_DETAIL_PANEL);
 		m_btnSwitch.addActionListener(this);
 		rootPanel.add(m_btnSwitch, cRoot);
-		
+
 		createStartPanel();
 		createDetailsPanel();
 
@@ -376,7 +376,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		c.insets = new Insets(0, 0, 5, 0);
 
 		AnonPropertyTable table;
-		
+
 		if(m_vecExternalIPs.size() != 0)
 		{
 			table = new AnonPropertyTable(this, true);
@@ -385,7 +385,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 			table.add(new AnonProperty("Java VM", System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
 			m_detailsPanel.add(table, c);
 		}
-		
+
 		table = new AnonPropertyTable(this, true);
 		table.setWidth(1, 430);
 		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
@@ -395,7 +395,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		addSystemProperty(table, "user.dir", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.name", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.home", AnonProperty.RATING_BAD);
-		
+
 		c.gridy++;
 		m_detailsPanel.add(table, c);
 
@@ -409,7 +409,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 			String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
 			table.add(new AnonProperty(addr, name, AnonProperty.RATING_NONE));
 		}
-		
+
 		c.gridy++;
 		c.weighty = 1.0;
 		m_detailsPanel.add(table, c);
@@ -435,7 +435,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		{
 			// this will cause a security exception on untrusted applets
 			System.getProperties();
-			table.add(new AnonProperty("<html>&nbsp;Applet<br>&nbsp;vertraut</html>", "<html><div style='padding-left: 5px; padding-top: 1px'>Sie haben dem signierten Applet vertraut, " + System.getProperty("user.name") + "! Ein b\u00f6sartiges&nbsp;Applet h\u00e4tte nun vollen Zugriff auf ihren PC!</div></html>", AnonProperty.RATING_BAD));
+			table.add(new AnonProperty("<html>&nbsp;Applet<br>&nbsp;vertraut</html>", "<html><div style='padding-left: 5px; padding-top: 1px'>Sie haben dem signierten Applet vertraut, " + System.getProperty("user.name") + ". Ein b\u00f6sartiges&nbsp;Applet h\u00e4tte nun vollen Zugriff auf ihren PC!</div></html>", AnonProperty.RATING_BAD));
 		}
 		catch(Exception ex)
 		{
@@ -471,7 +471,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 			m_strExternalIPs += ip;
 			m_startPanel.add(table, c);
 		}
-		
+
 		if(m_vecExternalIPs.size() == 0)
 		{
 			table = new AnonPropertyTable(this, true);
