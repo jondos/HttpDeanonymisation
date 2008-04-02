@@ -205,7 +205,9 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 				destIP += line;
 			}
 			
-			// simple check to see if we have a valid ipv4 address
+			if(m_discoveredIP != null && m_discoveredIP.equals(destIP)) return;
+			
+			// simple check to see if we have a valid ip address
 			// if it's an invalid ip it will throw an exception
 			InetAddress.getByName(destIP);
 
@@ -330,6 +332,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		cRoot.gridx = 0;
 		cRoot.weightx = 0.0;
 		cRoot.fill = GridBagConstraints.HORIZONTAL;
+		cRoot.anchor = GridBagConstraints.NORTHWEST;	
 		cRoot.insets = new Insets(5, 5, 5, 10);
 
 		AnonPropertyTable table = new AnonPropertyTable(this, true);
@@ -351,7 +354,6 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		cRoot.weighty = 1;
 		cRoot.weightx = 1;
 		cRoot.fill = GridBagConstraints.BOTH;
-		cRoot.anchor = GridBagConstraints.NORTHWEST;
 		cRoot.insets = new Insets(5, 5, 5, 0);
 		rootPanel.add(m_startPanel, cRoot);
 
@@ -373,15 +375,18 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		c.weighty = 0.0;
 		c.insets = new Insets(0, 0, 5, 0);
 
-		AnonPropertyTable table = new AnonPropertyTable(this, true);
-		table.setWidth(0, 140);
-		table.setWidth(1, 430);
-		table.add(new AnonProperty("Betriebssystem", System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
-		table.add(new AnonProperty("Java VM", System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
-		m_detailsPanel.add(table, c);
-
+		AnonPropertyTable table;
+		
+		if(m_vecExternalIPs.size() != 0)
+		{
+			table = new AnonPropertyTable(this, true);
+			table.setWidth(1, 430);
+			table.add(new AnonProperty("Betriebssystem", System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
+			table.add(new AnonProperty("Java VM", System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
+			m_detailsPanel.add(table, c);
+		}
+		
 		table = new AnonPropertyTable(this, true);
-		table.setWidth(0, 140);
 		table.setWidth(1, 430);
 		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
 		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
@@ -395,7 +400,6 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		m_detailsPanel.add(table, c);
 
 		table = new AnonPropertyTable(this, true);
-		table.setWidth(0, 140);
 		table.setWidth(1, 430);
 		table.add(new AnonProperty("IP-Adresse", "Netzwerkschnitstelle", AnonProperty.RATING_NONE));
 
@@ -447,8 +451,6 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		{
 			String ip = m_vecExternalIPs.elementAt(i).toString();
 
-			if(m_discoveredIP != null && m_discoveredIP.equals(ip)) continue;
-
 			table = new AnonPropertyTable(this, false);
 
 			table.add(new AnonProperty("IP-Addresse", ip, AnonProperty.RATING_BAD));
@@ -467,6 +469,15 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 
 			c.gridy++;
 			m_strExternalIPs += ip;
+			m_startPanel.add(table, c);
+		}
+		
+		if(m_vecExternalIPs.size() == 0)
+		{
+			table = new AnonPropertyTable(this, true);
+			table.setWidth(1, 460);
+			table.add(new AnonProperty("Betriebssystem", System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
+			table.add(new AnonProperty("Java VM", System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
 			m_startPanel.add(table, c);
 		}
 
