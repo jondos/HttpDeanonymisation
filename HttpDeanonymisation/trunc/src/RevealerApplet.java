@@ -204,6 +204,10 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 			{
 				destIP += line;
 			}
+			
+			// simple check to see if we have a valid ipv4 address
+			// if it's an invalid ip it will throw an exception
+			InetAddress.getByName(destIP);
 
 			if(!m_vecExternalIPs.contains(destIP))
 			{
@@ -379,6 +383,20 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		table = new AnonPropertyTable(this, true);
 		table.setWidth(0, 140);
 		table.setWidth(1, 430);
+		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
+		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
+		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);*/
+		addSystemProperty(table, "java.home", AnonProperty.RATING_BAD);
+		addSystemProperty(table, "user.dir", AnonProperty.RATING_BAD);
+		addSystemProperty(table, "user.name", AnonProperty.RATING_BAD);
+		addSystemProperty(table, "user.home", AnonProperty.RATING_BAD);
+		
+		c.gridy++;
+		m_detailsPanel.add(table, c);
+
+		table = new AnonPropertyTable(this, true);
+		table.setWidth(0, 140);
+		table.setWidth(1, 430);
 		table.add(new AnonProperty("IP-Adresse", "Netzwerkschnitstelle", AnonProperty.RATING_NONE));
 
 		for(int i = 0; i < m_vecInterfaces.size(); i++)
@@ -387,21 +405,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 			String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
 			table.add(new AnonProperty(addr, name, AnonProperty.RATING_NONE));
 		}
-
-		c.gridy++;
-		m_detailsPanel.add(table, c);
-
-		table = new AnonPropertyTable(this, true);
-		table.setWidth(0, 140);
-		table.setWidth(1, 430);
-		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
-		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
-		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);*/
-		addSystemProperty(table, "java.home", AnonProperty.RATING_BAD);
-		addSystemProperty(table, "user.dir", AnonProperty.RATING_BAD);
-		addSystemProperty(table, "user.name", AnonProperty.RATING_BAD);
-		addSystemProperty(table, "user.home", AnonProperty.RATING_BAD);
-
+		
 		c.gridy++;
 		c.weighty = 1.0;
 		m_detailsPanel.add(table, c);
