@@ -27,7 +27,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 	public String m_strExternalIPs;
 	public String m_strInternalIPs;
 
-	private String m_targetURL = "/de/files/anontest/onlyip.php";
+	//private String m_targetURL = "/de/files/anontest/onlyip.php";
+        private String m_targetURL = "/geoip/onlyip.php";
 	private String m_lookupURL = "/geoip/lookup.php";
 	private int m_width = 600;
 	private int m_height = 300;
@@ -415,7 +416,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			// this will cause a security exception on untrusted applets
 			System.getProperties();
-			table.add(new AnonProperty("<html>&nbsp;Applet<br>&nbsp;vertraut</html>", "<html>&nbsp;Sie haben dem signierten Applet vertraut, " + System.getProperty("user.name") + "! Ein böshaftes<br>&nbsp;Applet hätte nun vollen Zugriff auf ihren PC!</html>", AnonProperty.RATING_BAD));
+			table.add(new AnonProperty("<html>&nbsp;Applet<br>&nbsp;vertraut</html>", "<html>&nbsp;Sie haben dem signierten Applet vertraut, " + System.getProperty("user.name") + "! Ein b\u00f6sartiges<br>&nbsp;Applet h\u00e4tte nun vollen Zugriff auf ihren PC!</html>", AnonProperty.RATING_BAD));
 		}
 		catch(Exception ex)
 		{
