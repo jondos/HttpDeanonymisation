@@ -31,7 +31,7 @@
     </target>
     <target depends="build-project" name="make-jar">
     	<jar jarfile="${dist}/${ant.project.name}.jar">
-    		<fileset dir="bin" includes="**/*.class" />
+    		<fileset dir="bin" includes="**/*.class" excludes="**/TestApplet.class" />
   	    </jar>
     </target>
     <target depends="make-jar" name="sign-jar">
@@ -41,6 +41,9 @@
     	<input defaultvalue="${storepass}" addproperty="keypass">Please enter the key password</input>
     	<echo message="signing ${ant.project.name}"/>    	
     	<signjar jar="${dist}/${ant.project.name}.jar" verbose="true" alias="${alias}" storepass="${storepass}" keystore="${keystore}" keypass="${keypass}"/>
+    	<copy todir="dist">
+    		<fileset dir="bin" includes="TestApplet.class, IPRevealer.class" />
+    	</copy>
     </target>
     <target name="RevealerApplet">
         <java classname="sun.applet.AppletViewer" dir="." failonerror="true" fork="yes">
