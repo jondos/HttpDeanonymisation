@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Point;
+import java.applet.Applet;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -119,7 +120,7 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 	private AnonPropertyTableModel m_model;
 	private AnonPropertyCellRenderer m_cellRenderer;		
 	
-	private JApplet m_applet;
+	private Applet m_applet;
 	
 	Font m_fNormal = new Font("Verdana", 0, 13);
 	private Font m_fLink = new Font("Verdana", Font.BOLD, 14);
@@ -127,7 +128,7 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 	Color m_cNormal = new Color(68, 68, 68);
 	Color m_cHeader = new Color(0, 0, 128);
 	
-	public AnonPropertyTable(JApplet a_applet, boolean a_bHide3rdRow)
+	public AnonPropertyTable(Applet a_applet, boolean a_bHide3rdRow)
 	{
 		m_model = new AnonPropertyTableModel();
 		m_cellRenderer = new AnonPropertyCellRenderer();
