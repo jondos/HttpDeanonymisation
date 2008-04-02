@@ -141,7 +141,7 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		setRowHeight(23);
 		
-		setWidth(0, 110);
+		setWidth(0, 130);
 		setWidth(1, 350);
 		setWidth(2, 110);
 		
