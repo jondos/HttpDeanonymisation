@@ -435,7 +435,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		{
 			// this will cause a security exception on untrusted applets
 			System.getProperties();
-			table.add(new AnonProperty("<html>&nbsp;Applet<br>&nbsp;vertraut</html>", "<html>&nbsp;Sie haben dem signierten Applet vertraut, " + System.getProperty("user.name") + "! Ein b\u00f6sartiges<br>&nbsp;Applet h\u00e4tte nun vollen Zugriff auf ihren PC!</html>", AnonProperty.RATING_BAD));
+			table.add(new AnonProperty("<html>&nbsp;Applet<br>&nbsp;vertraut</html>", "<html><div style='padding-left: 5px; padding-top: 1px'>Sie haben dem signierten Applet vertraut, " + System.getProperty("user.name") + "! Ein b\u00f6sartiges&nbsp;Applet h\u00e4tte nun vollen Zugriff auf ihren PC!</div></html>", AnonProperty.RATING_BAD));
 		}
 		catch(Exception ex)
 		{

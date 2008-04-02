@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
+import javax.swing.SwingConstants;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JApplet;
@@ -53,7 +54,9 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 				setToolTipText(((AnonPropertyAction) value).getUrl());
 			}
 			
-			setText((value.toString().startsWith("<html>") ? "" : " ") + value.toString());			
+			this.setVerticalAlignment(SwingConstants.TOP);
+			
+			setText((value.toString().startsWith("<html>") ? "" : " ") + value.toString());	
 		}
 	}
 
@@ -146,7 +149,9 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 		setWidth(2, 110);
 		
 		if(a_bHide3rdRow) getColumnModel().removeColumn(getColumnModel().getColumn(2));
-			
+		
+		
+		
 		setGridColor(new Color(204, 204, 204));
 		setRowSelectionAllowed(false);
 		setColumnSelectionAllowed(false);
