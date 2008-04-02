@@ -1,3 +1,6 @@
+import java.applet.Applet;
+import java.applet.AppletStub;
+import java.awt.Component;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,14 +24,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.lang.reflect.*;
 
-public class RevealerApplet extends JApplet implements ActionListener
+public class RevealerApplet extends JApplet implements ActionListener, AppletStub
 {
 	public String m_strExternalIPs;
 	public String m_strInternalIPs;
 
-	//private String m_targetURL = "/de/files/anontest/onlyip.php";
-        private String m_targetURL = "/geoip/onlyip.php";
+	private String m_targetURL = "/geoip/onlyip.php";
 	private String m_lookupURL = "/geoip/lookup.php";
 	private int m_width = 600;
 	private int m_height = 300;
@@ -36,7 +39,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private Vector m_vecExternalIPs;
 	private Vector m_vecInternalIPs;
 	private Vector m_vecInterfaces;
-
+	
 	private JPanel m_startPanel;
 	private JPanel m_detailsPanel;
 	private JButton m_btnSwitch;
@@ -51,6 +54,11 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 	private String m_javaIsDangerousUrl = "https://www.jondos.de/javaisdangerous";
 
+	public void appletResize(int width, int height)
+	{
+		resize(width, height);
+	}
+	
 	public void init()
 	{
 		super.init();
@@ -86,6 +94,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 				m_javaIsDangerousUrl = url;
 		}
 
+			
 		m_discoveredIP = getParameter("DISCOVERED_IP");
 
 		setSize(m_width, m_height);
@@ -106,6 +115,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		}
 
 		createRootPanel();
+		
+
 	}
 
 	public void start()
@@ -226,7 +237,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 			writer.write("GET https://" + host + m_lookupURL + "?ip=" + ip +  "\n\n\n");
 			writer.flush();
-
+			
 			for(int i = 0; i < geoip.length; i++)
 			{
 				geoip[i] = reader.readLine();
@@ -326,7 +337,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		m_btnSwitch = new JButton(TEXT_SWITCH_TO_DETAIL_PANEL);
 		m_btnSwitch.addActionListener(this);
 		rootPanel.add(m_btnSwitch, cRoot);
-
+		
 		createStartPanel();
 		createDetailsPanel();
 
@@ -383,9 +394,9 @@ public class RevealerApplet extends JApplet implements ActionListener
 		table = new AnonPropertyTable(this, true);
 		table.setWidth(0, 140);
 		table.setWidth(1, 430);
-		addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
+		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
 		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
-		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);
+		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);*/
 		addSystemProperty(table, "java.home", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.dir", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.name", AnonProperty.RATING_BAD);
