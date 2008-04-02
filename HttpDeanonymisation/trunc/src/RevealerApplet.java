@@ -92,7 +92,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		m_vecExternalIPs = new Vector();
 		m_vecInternalIPs = new Vector();
 		m_vecInterfaces = new Vector();
-
+		
 		getIPs();
 
 		try
@@ -103,7 +103,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			System.err.println("Error setting native Look and Feel: " + e.getMessage());
 		}
-
+		
 		createRootPanel();
 	}
 
@@ -225,7 +225,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			
 			writer.write("GET https://" + host + m_lookupURL + "?ip=" + ip +  "\n\n\n");
 			writer.flush();
-
+			
 			for(int i = 0; i < geoip.length; i++)
 			{
 				geoip[i] = reader.readLine();
@@ -256,7 +256,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 					
 					// skip ipv6 addresses
 					if(ip.length() > 16 || ip.equals("0:0:0:0:0:0:0:1")) continue;
-
+					
 					if(addr.isSiteLocalAddress())
 					{
 						if(!m_vecInternalIPs.contains(ip))
@@ -287,7 +287,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			System.out.println("Listing network interfaces failed: " + e.getMessage());
 		}
 	}
-
+	
 	private void addSystemProperty(AnonPropertyTable a_table, String a_strProperty, int a_rating)
 	{
 		try
@@ -342,7 +342,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		cRoot.gridy++;
 		rootPanel.add(m_detailsPanel, cRoot);
 	}
-
+	
 	private void createDetailsPanel() 
 	{
 		m_detailsPanel = new JPanel(new GridBagLayout());
@@ -394,7 +394,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		c.weighty = 1.0;
 		m_detailsPanel.add(table, c);
 	}
-
+	
 	private void createStartPanel() 
 	{
 		m_startPanel = new JPanel(new GridBagLayout());
@@ -448,12 +448,12 @@ public class RevealerApplet extends JApplet implements ActionListener
 					table.add(new AnonProperty("Reverse DNS", geoIP[5], "Whois Domain", "https://www.jondos.de/whois?domain=1", AnonProperty.RATING_NONE));
 				}
 			}
-	
+			
 			c.gridy++;
 			m_strExternalIPs += ip;
 			m_startPanel.add(table, c);
 		}
-	
+		
 		c.insets = new Insets(0, 0, 5, 0);
 		c.weighty = 1.0;
 		table = new AnonPropertyTable(this, true);
