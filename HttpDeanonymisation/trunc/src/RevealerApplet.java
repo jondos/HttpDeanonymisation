@@ -42,14 +42,14 @@ public class RevealerApplet extends JApplet implements ActionListener
 	JLabel m_lblJavaIsDangerous;
 	JLabel m_lblLocation;
 	JLabel m_lblProvider;
-	
+
 	private String m_discoveredIP;
 
 	private final static String TEXT_SWITCH_TO_DETAIL_PANEL = "Details";
-	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Zurück";
-	
+	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Zur\u00fcck";
+
 	private String m_javaIsDangerousUrl = "https://www.jondos.de/javaisdangerous";
-	
+
 	public void init()
 	{
 		super.init();
@@ -77,14 +77,14 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 			}
 		}
-		
+
 		if(getParameter("JAVA_IS_DANGEROUS_URL") != null)
 		{
 			String url = getParameter("JAVA_IS_DANGEROUS_URL");
 			if(url.startsWith("https://www.anonymix.eu") || url.startsWith("https://www.jondos.de"))
 				m_javaIsDangerousUrl = url;
 		}
-		
+
 		m_discoveredIP = getParameter("DISCOVERED_IP");
 
 		setSize(m_width, m_height);
@@ -92,7 +92,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		m_vecExternalIPs = new Vector();
 		m_vecInternalIPs = new Vector();
 		m_vecInterfaces = new Vector();
-		
+
 		getIPs();
 
 		try
@@ -103,7 +103,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			System.err.println("Error setting native Look and Feel: " + e.getMessage());
 		}
-		
+
 		createRootPanel();
 	}
 
@@ -140,7 +140,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 		}
 	}
-	
+
 	public void getIPs()
 	{
 		getIPsFromAnontest(true);
@@ -203,36 +203,36 @@ public class RevealerApplet extends JApplet implements ActionListener
 			System.out.println("Getting IP addresses from anontest URL failed: " + e.getMessage());
 		}
 	}
-	
+
 	public String[] getGeoIP(String ip)
 	{
 		String host = getDocumentBase().getHost();
 		String[] geoip = new String[6];
-		
+
 		if(host.indexOf("jondos.de") < 0 && host.indexOf("anonymix.eu") < 0)
 		{
 			// we're running within an applet viewer, use the test site
 			host = "www.anonymix.eu";
 		}
-		
+
 		try
 		{
 			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 			SSLSocket sock = (SSLSocket) factory.createSocket(host, 443);
-			
+
 			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
-			
+
 			writer.write("GET https://" + host + m_lookupURL + "?ip=" + ip +  "\n\n\n");
 			writer.flush();
-			
+
 			for(int i = 0; i < geoip.length; i++)
 			{
 				geoip[i] = reader.readLine();
 			}
 		}
 		catch(Exception ex) {}
-		
+
 		return geoip;
 	}
 
@@ -253,10 +253,10 @@ public class RevealerApplet extends JApplet implements ActionListener
 					InetAddress addr = (InetAddress) addresses.nextElement();
 
 					String ip = addr.getHostAddress();
-					
+
 					// skip ipv6 addresses
 					if(ip.length() > 16 || ip.equals("0:0:0:0:0:0:0:1")) continue;
-					
+
 					if(addr.isSiteLocalAddress())
 					{
 						if(!m_vecInternalIPs.contains(ip))
@@ -278,7 +278,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 					strAddr += ip + " ";
 				}
-				
+
 				m_vecInterfaces.addElement(new Object[] { iface.getDisplayName(), strAddr } );
 			}
 		}
@@ -287,7 +287,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			System.out.println("Listing network interfaces failed: " + e.getMessage());
 		}
 	}
-	
+
 	private void addSystemProperty(AnonPropertyTable a_table, String a_strProperty, int a_rating)
 	{
 		try
@@ -299,8 +299,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 			System.out.println("Could not read " + a_strProperty);
 		}
 	}
-	
-	private void createRootPanel() 
+
+	private void createRootPanel()
 	{
 		JPanel rootPanel = new JPanel(new GridBagLayout());
 		rootPanel.setBackground(Color.WHITE);
@@ -308,18 +308,18 @@ public class RevealerApplet extends JApplet implements ActionListener
 		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scroll.setBorder(null);
 		getContentPane().add(scroll);
-		
+
 		GridBagConstraints cRoot = new GridBagConstraints();
 		cRoot.gridy = 0;
 		cRoot.gridx = 0;
 		cRoot.weightx = 0.0;
 		cRoot.fill = GridBagConstraints.HORIZONTAL;
 		cRoot.insets = new Insets(5, 5, 5, 10);
-		
+
 		AnonPropertyTable table = new AnonPropertyTable(this, true);
-		table.add(new AnonProperty("Java aktiviert!", "Java beeinträchtigt Ihre Anonymität!", AnonProperty.RATING_BAD));
+		table.add(new AnonProperty("Java aktiviert!", "Java beeintr\u00e4chtigt Ihre Anonymit\u00e4t!", AnonProperty.RATING_BAD));
 		rootPanel.add(table, cRoot);
-		
+
 		cRoot.fill = GridBagConstraints.NONE;
 		cRoot.gridx++;
 		m_btnSwitch = new JButton(TEXT_SWITCH_TO_DETAIL_PANEL);
@@ -328,7 +328,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 		createStartPanel();
 		createDetailsPanel();
-		
+
 		cRoot.gridx = 0;
 		cRoot.gridy++;
 		cRoot.gridwidth = 2;
@@ -338,17 +338,17 @@ public class RevealerApplet extends JApplet implements ActionListener
 		cRoot.anchor = GridBagConstraints.NORTHWEST;
 		cRoot.insets = new Insets(5, 5, 5, 0);
 		rootPanel.add(m_startPanel, cRoot);
-		
+
 		cRoot.gridy++;
 		rootPanel.add(m_detailsPanel, cRoot);
 	}
-	
-	private void createDetailsPanel() 
+
+	private void createDetailsPanel()
 	{
 		m_detailsPanel = new JPanel(new GridBagLayout());
 		m_detailsPanel.setBackground(Color.WHITE);
 		m_detailsPanel.setVisible(false);
-	
+
 		GridBagConstraints c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
@@ -356,29 +356,29 @@ public class RevealerApplet extends JApplet implements ActionListener
 		c.weightx = 1.0;
 		c.weighty = 0.0;
 		c.insets = new Insets(0, 0, 5, 0);
-		
+
 		AnonPropertyTable table = new AnonPropertyTable(this, true);
 		table.setWidth(0, 140);
 		table.setWidth(1, 430);
 		table.add(new AnonProperty("Betriebssystem", System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
 		table.add(new AnonProperty("Java VM", System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
 		m_detailsPanel.add(table, c);
-				
+
 		table = new AnonPropertyTable(this, true);
 		table.setWidth(0, 140);
 		table.setWidth(1, 430);
 		table.add(new AnonProperty("IP-Adresse", "Netzwerkschnitstelle", AnonProperty.RATING_NONE));
-		
+
 		for(int i = 0; i < m_vecInterfaces.size(); i++)
 		{
 			String name = ((Object[]) m_vecInterfaces.elementAt(i))[0].toString();
 			String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
 			table.add(new AnonProperty(addr, name, AnonProperty.RATING_NONE));
 		}
-		
+
 		c.gridy++;
 		m_detailsPanel.add(table, c);
-		
+
 		table = new AnonPropertyTable(this, true);
 		table.setWidth(0, 140);
 		table.setWidth(1, 430);
@@ -389,17 +389,17 @@ public class RevealerApplet extends JApplet implements ActionListener
 		addSystemProperty(table, "user.dir", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.name", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.home", AnonProperty.RATING_BAD);
-		
+
 		c.gridy++;
 		c.weighty = 1.0;
 		m_detailsPanel.add(table, c);
 	}
-	
-	private void createStartPanel() 
+
+	private void createStartPanel()
 	{
 		m_startPanel = new JPanel(new GridBagLayout());
 		m_startPanel.setBackground(Color.WHITE);
-		
+
 		GridBagConstraints c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
@@ -407,10 +407,10 @@ public class RevealerApplet extends JApplet implements ActionListener
 		c.weightx = 1.0;
 		c.weighty = 0.0;
 		c.insets = new Insets(0, 0, 5, 0);
-		
+
 		AnonPropertyTable table = new AnonPropertyTable(this, true);
 		table.setRowHeight(40);
-		table.setWidth(1, 460);		
+		table.setWidth(1, 460);
 		try
 		{
 			// this will cause a security exception on untrusted applets
@@ -421,39 +421,39 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			//table.add(new AnonProperty("<html>Applet <br>nicht vertraut</html>", "Sie haben dem Applet nicht vertraut, es hat also nur", AnonProperty.RATING_OKISH));
 		}
-		
+
 		c.gridx = 0;
 		c.gridy++;
 		c.gridwidth = 2;
 		m_startPanel.add(table, c);
-		
+
 		for(int i = 0; i < m_vecExternalIPs.size(); i++)
 		{
 			String ip = m_vecExternalIPs.elementAt(i).toString();
-			
+
 			if(m_discoveredIP != null && m_discoveredIP.equals(ip)) continue;
-			
+
 			table = new AnonPropertyTable(this, false);
-			
+
 			table.add(new AnonProperty("IP-Addresse", ip, AnonProperty.RATING_BAD));
-			
+
 			String[] geoIP = getGeoIP(ip);
-			
-			if(geoIP != null) 
+
+			if(geoIP != null)
 			{
 				table.add(new AnonProperty("Standort", geoIP[0], "Karte", "http://www.mapquest.com/maps/map.adp?latlongtype=decimal&latitude=" + geoIP[3] + "&longitude=" + geoIP[4], AnonProperty.RATING_NONE));
 				table.add(new AnonProperty("Netzzugang", geoIP[1] + ", " + geoIP[2], "Whois IP", "https://www.jondos.de/whois", AnonProperty.RATING_NONE));
-				if(!geoIP[5].equals(ip)) 
+				if(!geoIP[5].equals(ip))
 				{
 					table.add(new AnonProperty("Reverse DNS", geoIP[5], "Whois Domain", "https://www.jondos.de/whois?domain=1", AnonProperty.RATING_NONE));
 				}
 			}
-			
+
 			c.gridy++;
 			m_strExternalIPs += ip;
 			m_startPanel.add(table, c);
 		}
-		
+
 		c.insets = new Insets(0, 0, 5, 0);
 		c.weighty = 1.0;
 		table = new AnonPropertyTable(this, true);
@@ -465,6 +465,6 @@ public class RevealerApplet extends JApplet implements ActionListener
 			m_strInternalIPs += (m_vecInternalIPs.elementAt(i));
 		}
 		c.gridy++;
-		m_startPanel.add(table, c);		
-	} 
+		m_startPanel.add(table, c);
+	}
 }
