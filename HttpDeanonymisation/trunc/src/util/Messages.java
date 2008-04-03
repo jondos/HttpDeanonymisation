@@ -74,12 +74,6 @@ public final class Messages
 	 */
 	public static synchronized void init(Locale locale, String a_resourceBundleFilename)
 	{
-		if (ms_locale != null)
-		{
-			// the first bundle has been loaded; set Englisch as safe default
-			Locale.setDefault(Locale.ENGLISH);
-		}
-
 		try
 		{
 			if (ms_defaultResourceBundle == null)

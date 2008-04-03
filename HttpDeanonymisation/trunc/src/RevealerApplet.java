@@ -438,17 +438,14 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			// this will cause a security exception on untrusted applets
 			System.getProperties();
-			table.add(new AnonProperty(Messages.getString(MSG_TRUSTED_APPLET), Messages.getString(MSG_TRUSTED_APPLET_DESC, System.getProperty("user.name")), AnonProperty.RATING_BAD));
+			table.add(new AnonProperty(Messages.getString(MSG_TRUSTED_APPLET), "<html><div style='padding-left: 5px; padding-top: 1px'>" + Messages.getString(MSG_TRUSTED_APPLET_DESC, System.getProperty("user.name")) + "</div></html>", AnonProperty.RATING_BAD));
+			c.gridy++;
+			m_startPanel.add(table, c);
 		}
 		catch(Exception ex)
 		{
-			//table.add(new AnonProperty("<html>Applet <br>nicht vertraut</html>", "Sie haben dem Applet nicht vertraut, es hat also nur", AnonProperty.RATING_OKISH));
+			
 		}
-
-		c.gridx = 0;
-		c.gridy++;
-		c.gridwidth = 2;
-		m_startPanel.add(table, c);
 
 		for(int i = 0; i < m_vecExternalIPs.size(); i++)
 		{
@@ -481,6 +478,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			table.setWidth(1, 460);
 			table.add(new AnonProperty(Messages.getString(MSG_OS), System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
 			table.add(new AnonProperty(Messages.getString(MSG_JAVA_VM), System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
+			c.gridy++;
 			m_startPanel.add(table, c);
 		}
 

@@ -31,7 +31,7 @@
     </target>
     <target depends="build-project" name="make-jar">
     	<jar jarfile="${dist}/${ant.project.name}.jar">
-    		<fileset dir="bin" includes="**/*.class" excludes="**/TestApplet.class" />
+    		<fileset dir="bin" includes="**/*.class, **/*.properties" />
   	    </jar>
     </target>
     <target depends="make-jar" name="sign-jar">
