@@ -1,11 +1,9 @@
-import java.applet.Applet;
-import java.applet.AppletStub;
-import java.awt.Component;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Locale;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -25,8 +23,28 @@ import java.awt.event.ActionEvent;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public class RevealerApplet extends JApplet implements ActionListener, AppletStub
+import util.Messages;
+
+public class RevealerApplet extends JApplet implements ActionListener
 {
+	private static final String MSG_NETWORK_ACCESS = RevealerApplet.class.getName() + ".networkAccess";
+	private static final String MSG_SHOW_MAP = RevealerApplet.class.getName() + ".showMap";
+	private static final String MSG_LOCATION = RevealerApplet.class.getName() + ".location";
+	private static final String MSG_OS = RevealerApplet.class.getName() + ".os";
+	private static final String MSG_INTERNAL_IP = RevealerApplet.class.getName() + ".internalIP";
+	private static final String MSG_TRUSTED_APPLET_DESC= RevealerApplet.class.getName() + ".trustedAppletDescription";
+	private static final String MSG_TRUSTED_APPLET = RevealerApplet.class.getName() + ".trustedApplet";
+	private static final String MSG_NETWORK_INTERFACE = RevealerApplet.class.getName() + ".networkInterface";
+	private static final String MSG_IP_ADDRESS = RevealerApplet.class.getName() + ".ipAddress";
+	private static final String MSG_JAVA_IS_ACTIVATED = RevealerApplet.class.getName() + ".javaIsActivated";
+	private static final String MSG_JAVA_ANON_BAD = RevealerApplet.class.getName() + ".javaAnonBad";
+	private final static String MSG_DETAILS = RevealerApplet.class.getName() + ".details";
+	private final static String MSG_BACK = RevealerApplet.class.getName() + ".back";
+	
+	private static final String MSG_JAVA_VM = RevealerApplet.class.getName() + ".javaVM";
+	private static final String MSG_WHOIS_DOMAIN = RevealerApplet.class.getName() + ".whoisDomain";
+	private static final String MSG_REVERSE_DNS = RevealerApplet.class.getName() + ".reverseDNS";
+	
 	public String m_strExternalIPs;
 	public String m_strInternalIPs;
 
@@ -34,33 +52,26 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 	private String m_lookupURL = "/geoip/lookup.php";
 	private int m_width = 600;
 	private int m_height = 300;
-
+	
 	private Vector m_vecExternalIPs;
 	private Vector m_vecInternalIPs;
 	private Vector m_vecInterfaces;
 
 	private JPanel m_startPanel;
-	private JPanel m_detailsPanel;
+	private JPanel mtailsPanel;
 	private JButton m_btnSwitch;
-	JLabel m_lblJavaIsDangerous;
+
 	JLabel m_lblLocation;
 	JLabel m_lblProvider;
 
 	private String m_discoveredIP;
 
-	private final static String TEXT_SWITCH_TO_DETAIL_PANEL = "Details";
-	private final static String TEXT_SWITCH_TO_NETWORK_PANEL = "Zur\u00fcck";
-
-	private String m_javaIsDangerousUrl = "https://www.jondos.de/javaisdangerous";
-
-	public void appletResize(int width, int height)
-	{
-		resize(width, height);
-	}
-
 	public void init()
 	{
 		super.init();
+		
+		Messages.init("anontest");
+		Messages.init(Locale.GERMAN, "anontest");
 
 		if(getParameter("WIDTH") != null)
 		{
@@ -85,15 +96,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 
 			}
 		}
-
-		if(getParameter("JAVA_IS_DANGEROUS_URL") != null)
-		{
-			String url = getParameter("JAVA_IS_DANGEROUS_URL");
-			if(url.startsWith("https://www.anonymix.eu") || url.startsWith("https://www.jondos.de"))
-				m_javaIsDangerousUrl = url;
-		}
-
-
+		
 		m_discoveredIP = getParameter("DISCOVERED_IP");
 
 		setSize(m_width, m_height);
@@ -114,8 +117,6 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		}
 
 		createRootPanel();
-
-
 	}
 
 	public void start()
@@ -140,14 +141,14 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 			if(m_startPanel.isVisible())
 			{
 				m_startPanel.setVisible(false);
-				m_detailsPanel.setVisible(true);
-				m_btnSwitch.setText(TEXT_SWITCH_TO_NETWORK_PANEL);
+				mtailsPanel.setVisible(true);
+				m_btnSwitch.setText(Messages.getString(MSG_BACK));
 			}
 			else
 			{
-				m_detailsPanel.setVisible(false);
+				mtailsPanel.setVisible(false);
 				m_startPanel.setVisible(true);
-				m_btnSwitch.setText(TEXT_SWITCH_TO_DETAIL_PANEL);
+				m_btnSwitch.setText(Messages.getString(MSG_DETAILS));
 			}
 		}
 	}
@@ -316,7 +317,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 			System.out.println("Could not read " + a_strProperty);
 		}
 	}
-
+	
 	private void createRootPanel()
 	{
 		JPanel rootPanel = new JPanel(new GridBagLayout());
@@ -335,12 +336,12 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		cRoot.insets = new Insets(5, 5, 5, 10);
 
 		AnonPropertyTable table = new AnonPropertyTable(this, true);
-		table.add(new AnonProperty("Java aktiviert!", "Java im Browser beeintr\u00e4chtigt Ihre Anonymit\u00e4t!", AnonProperty.RATING_BAD));
+		table.add(new AnonProperty(Messages.getString(MSG_JAVA_IS_ACTIVATED), Messages.getString(MSG_JAVA_ANON_BAD), AnonProperty.RATING_BAD));
 		rootPanel.add(table, cRoot);
 
 		cRoot.fill = GridBagConstraints.NONE;
 		cRoot.gridx++;
-		m_btnSwitch = new JButton(TEXT_SWITCH_TO_DETAIL_PANEL);
+		m_btnSwitch = new JButton(Messages.getString(MSG_DETAILS));
 		m_btnSwitch.addActionListener(this);
 		rootPanel.add(m_btnSwitch, cRoot);
 
@@ -357,14 +358,14 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		rootPanel.add(m_startPanel, cRoot);
 
 		cRoot.gridy++;
-		rootPanel.add(m_detailsPanel, cRoot);
+		rootPanel.add(mtailsPanel, cRoot);
 	}
 
 	private void createDetailsPanel()
 	{
-		m_detailsPanel = new JPanel(new GridBagLayout());
-		m_detailsPanel.setBackground(Color.WHITE);
-		m_detailsPanel.setVisible(false);
+		mtailsPanel = new JPanel(new GridBagLayout());
+		mtailsPanel.setBackground(Color.WHITE);
+		mtailsPanel.setVisible(false);
 
 		GridBagConstraints c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.NORTHWEST;
@@ -380,9 +381,9 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		{
 			table = new AnonPropertyTable(this, true);
 			table.setWidth(1, 430);
-			table.add(new AnonProperty("Betriebssystem", System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
-			table.add(new AnonProperty("Java VM", System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
-			m_detailsPanel.add(table, c);
+			table.add(new AnonProperty(Messages.getString(MSG_OS), System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
+			table.add(new AnonProperty(Messages.getString(MSG_JAVA_VM), System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
+			mtailsPanel.add(table, c);
 		}
 
 		table = new AnonPropertyTable(this, true);
@@ -396,11 +397,11 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		addSystemProperty(table, "user.home", AnonProperty.RATING_BAD);
 
 		c.gridy++;
-		m_detailsPanel.add(table, c);
+		mtailsPanel.add(table, c);
 
 		table = new AnonPropertyTable(this, true);
 		table.setWidth(1, 430);
-		table.add(new AnonProperty("IP-Adresse", "Netzwerkschnitstelle", AnonProperty.RATING_NONE));
+		table.add(new AnonProperty(Messages.getString(MSG_IP_ADDRESS), Messages.getString(MSG_NETWORK_INTERFACE), AnonProperty.RATING_NONE));
 
 		for(int i = 0; i < m_vecInterfaces.size(); i++)
 		{
@@ -411,7 +412,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 
 		c.gridy++;
 		c.weighty = 1.0;
-		m_detailsPanel.add(table, c);
+		mtailsPanel.add(table, c);
 	}
 
 	private void createStartPanel()
@@ -434,7 +435,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		{
 			// this will cause a security exception on untrusted applets
 			System.getProperties();
-			table.add(new AnonProperty("<html>&nbsp;Applet<br>&nbsp;vertraut</html>", "<html><div style='padding-left: 5px; padding-top: 1px'>Sie haben dem signierten Applet vertraut, " + System.getProperty("user.name") + ". Ein b\u00f6sartiges&nbsp;Applet h\u00e4tte nun vollen Zugriff auf ihren PC!</div></html>", AnonProperty.RATING_BAD));
+			table.add(new AnonProperty(Messages.getString(MSG_TRUSTED_APPLET), Messages.getString(MSG_TRUSTED_APPLET_DESC, System.getProperty("user.name")), AnonProperty.RATING_BAD));
 		}
 		catch(Exception ex)
 		{
@@ -458,11 +459,11 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 
 			if(geoIP != null)
 			{
-				table.add(new AnonProperty("Standort", geoIP[0], "Karte", "http://www.mapquest.com/maps/map.adp?latlongtype=decimal&latitude=" + geoIP[3] + "&longitude=" + geoIP[4], AnonProperty.RATING_NONE));
-				table.add(new AnonProperty("Netzzugang", geoIP[1] + ", " + geoIP[2], "Whois IP", "https://www.jondos.de/whois", AnonProperty.RATING_NONE));
+				table.add(new AnonProperty(Messages.getString(MSG_LOCATION), geoIP[0], Messages.getString(MSG_SHOW_MAP), "http://www.mapquest.com/maps/map.adp?latlongtype=decimal&latitude=" + geoIP[3] + "&longitude=" + geoIP[4], AnonProperty.RATING_NONE));
+				table.add(new AnonProperty(Messages.getString(MSG_NETWORK_ACCESS), geoIP[1] + ", " + geoIP[2], "Whois IP", "https://www.jondos.de/whois", AnonProperty.RATING_NONE));
 				if(!geoIP[5].equals(ip))
 				{
-					table.add(new AnonProperty("Reverse DNS", geoIP[5], "Whois Domain", "https://www.jondos.de/whois?domain=1", AnonProperty.RATING_NONE));
+					table.add(new AnonProperty(Messages.getString(MSG_REVERSE_DNS), geoIP[5], Messages.getString(MSG_WHOIS_DOMAIN), "https://www.jondos.de/whois?domain=1", AnonProperty.RATING_NONE));
 				}
 			}
 
@@ -475,8 +476,8 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		{
 			table = new AnonPropertyTable(this, true);
 			table.setWidth(1, 460);
-			table.add(new AnonProperty("Betriebssystem", System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
-			table.add(new AnonProperty("Java VM", System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
+			table.add(new AnonProperty(Messages.getString(MSG_OS), System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
+			table.add(new AnonProperty(Messages.getString(MSG_JAVA_VM), System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
 			m_startPanel.add(table, c);
 		}
 
@@ -486,7 +487,7 @@ public class RevealerApplet extends JApplet implements ActionListener, AppletStu
 		table.setWidth(1, 460);
 		for(int i = 0; i < m_vecInternalIPs.size(); i++)
 		{
-			table.add(new AnonProperty("Interne IP", m_vecInternalIPs.elementAt(i).toString(), AnonProperty.RATING_OKISH));
+			table.add(new AnonProperty(Messages.getString(MSG_INTERNAL_IP), m_vecInternalIPs.elementAt(i).toString(), AnonProperty.RATING_OKISH));
 
 			m_strInternalIPs += (m_vecInternalIPs.elementAt(i));
 		}
