@@ -24,7 +24,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Enumeration;
 import java.util.Vector;
-import java.lang.reflect.*;
 
 public class RevealerApplet extends JApplet implements ActionListener, AppletStub
 {
