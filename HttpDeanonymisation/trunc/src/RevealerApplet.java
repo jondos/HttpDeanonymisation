@@ -39,8 +39,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private static final String MSG_JAVA_IS_ACTIVATED = RevealerApplet.class.getName() + ".javaIsActivated";
 	private static final String MSG_JAVA_ANON_BAD = RevealerApplet.class.getName() + ".javaAnonBad";
 	private final static String MSG_DETAILS = RevealerApplet.class.getName() + ".details";
-	private final static String MSG_BACK = RevealerApplet.class.getName() + ".back";
-	
+	private final static String MSG_BACK = RevealerApplet.class.getName() + ".back";	
 	private static final String MSG_JAVA_VM = RevealerApplet.class.getName() + ".javaVM";
 	private static final String MSG_WHOIS_DOMAIN = RevealerApplet.class.getName() + ".whoisDomain";
 	private static final String MSG_REVERSE_DNS = RevealerApplet.class.getName() + ".reverseDNS";
@@ -71,7 +70,6 @@ public class RevealerApplet extends JApplet implements ActionListener
 		super.init();
 		
 		Messages.init("anontest");
-		Messages.init(Locale.GERMAN, "anontest");
 
 		if(getParameter("WIDTH") != null)
 		{
@@ -95,6 +93,11 @@ public class RevealerApplet extends JApplet implements ActionListener
 			{
 
 			}
+		}
+		
+		if(getParameter("LOCALE") != null)
+		{
+			Messages.init(new Locale(getParameter("LOCALE"), ""), "anontest");
 		}
 		
 		m_discoveredIP = getParameter("DISCOVERED_IP");
@@ -453,7 +456,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 			table = new AnonPropertyTable(this, false);
 
-			table.add(new AnonProperty("IP-Addresse", ip, AnonProperty.RATING_BAD));
+			table.add(new AnonProperty(Messages.getString(MSG_IP_ADDRESS), ip, AnonProperty.RATING_BAD));
 
 			String[] geoIP = getGeoIP(ip);
 
