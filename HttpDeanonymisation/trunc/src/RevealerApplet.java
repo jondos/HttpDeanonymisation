@@ -395,6 +395,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
 		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);*/
 		addSystemProperty(table, "java.home", AnonProperty.RATING_BAD);
+		addSystemProperty(table, "user.language", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.dir", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.name", AnonProperty.RATING_BAD);
 		addSystemProperty(table, "user.home", AnonProperty.RATING_BAD);
