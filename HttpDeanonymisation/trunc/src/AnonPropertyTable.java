@@ -150,8 +150,6 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 		
 		if(a_bHide3rdRow) getColumnModel().removeColumn(getColumnModel().getColumn(2));
 		
-		
-		
 		setGridColor(new Color(204, 204, 204));
 		setRowSelectionAllowed(false);
 		setColumnSelectionAllowed(false);
