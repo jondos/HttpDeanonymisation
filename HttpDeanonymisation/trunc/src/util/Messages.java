@@ -34,7 +34,7 @@ public final class Messages
 	 */
 	public static void init(String a_resourceBundleFilename)
 	{
-		// Load Texts for Messages and Windows
+		// Load Texts for Messages and Windows+
 		init(Locale.getDefault(), a_resourceBundleFilename);
 	}
 

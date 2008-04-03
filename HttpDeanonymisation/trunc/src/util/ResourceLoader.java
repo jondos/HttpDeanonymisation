@@ -943,8 +943,8 @@ public final class ResourceLoader
 					ms_bTriedToLoadParentResourceFile = true;
 					try
 					{
-						ms_parentResourceFile =
-							new File(ClassUtil.getClassDirectory(ResourceLoader.class).getAbsolutePath());
+						if(ClassUtil.getClassDirectory(ResourceLoader.class) != null)
+							ms_parentResourceFile = new File(ClassUtil.getClassDirectory(ResourceLoader.class).getAbsolutePath());
 					}
 					catch (Throwable a_e)
 					{
