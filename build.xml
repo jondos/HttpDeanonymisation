@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="anontest">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.4"/>
+    <property name="source" value="1.4"/>
+	<property name="src" value="src/"/>
+	<property name="dist" value="dist/"/>
+    <path id="anontest.classpath">
+        <pathelement location="bin"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+    	<mkdir dir="${dist}"/>    	
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="${src}" excludes="**/*.launch, **/*.java"/>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    	<delete dir="${dist}"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-project,make-jar,sign-jar" name="build"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="${src}"/>
+            <classpath refid="anontest.classpath"/>
+        </javac>
+    </target>
+    <target depends="build-project" name="make-jar">
+    	<jar jarfile="${dist}/${ant.project.name}.jar">
+    		<fileset dir="bin" includes="**/*.class, **/*.properties" />
+  	    </jar>
+    </target>
+    <target depends="make-jar" name="sign-jar">
+		<input defaultvalue=".keystore" addproperty="keystore">Please enter the path to your keystore file</input>
+	    <input defaultvalue="anontest" addproperty="storepass">Please enter the keystore password</input>    	
+    	<input defaultvalue="codesignatur" addproperty="alias">Please enter the alias name of your code signature</input>
+    	<input defaultvalue="${storepass}" addproperty="keypass">Please enter the key password</input>
+    	<echo message="signing ${ant.project.name}"/>    	
+    	<signjar jar="${dist}/${ant.project.name}.jar" verbose="true" alias="${alias}" storepass="${storepass}" keystore="${keystore}" keypass="${keypass}"/>
+    </target>
+    <target name="RevealerApplet">
+        <java classname="sun.applet.AppletViewer" dir="." failonerror="true" fork="yes">
+            <arg line="RevealerApplet.html"/>
+            <classpath refid="anontest.classpath"/>
+        </java>
+    </target>
+</project>
