@@ -44,6 +44,9 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private static final String MSG_WHOIS_DOMAIN = RevealerApplet.class.getName() + ".whoisDomain";
 	private static final String MSG_REVERSE_DNS = RevealerApplet.class.getName() + ".reverseDNS";
 	
+	final static String CRLF = "\r\n";
+	final static String HTTP_HEADER_END = CRLF+CRLF; //end of http message headers
+	
 	public String m_strExternalIPs;
 	public String m_strInternalIPs;
 
@@ -199,7 +202,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 
-			writer.write("GET " + (a_bUseSSL ? "https" : "http") + "://" + host + m_targetURL + "\n\n\n");
+			writer.write("GET " + (a_bUseSSL ? "https" : "http") + "://" + host + m_targetURL + HTTP_HEADER_END);
 			writer.flush();
 
 			destIP = new String();
