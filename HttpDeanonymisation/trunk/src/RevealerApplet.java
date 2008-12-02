@@ -247,7 +247,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 
-			writer.write("GET https://" + host + m_lookupURL + "?ip=" + ip +  "\n\n\n");
+			writer.write("GET https://" + host + m_lookupURL + "?ip=" + ip +  HTTP_HEADER_END);
 			writer.flush();
 
 			for(int i = 0; i < geoip.length; i++)
