@@ -1,3 +1,4 @@
+package privacytest;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 
