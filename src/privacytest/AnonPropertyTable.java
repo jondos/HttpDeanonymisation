@@ -1,4 +1,6 @@
+package privacytest;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Point;
@@ -12,11 +14,10 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.SwingConstants;
-import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.JApplet;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
 
 /**
  * 
@@ -53,6 +54,7 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 				setForeground(m_cHeader);
 				setToolTipText(((AnonPropertyAction) value).getUrl());
 			}
+			AnonPropertyTable.this.setRowHeight(this.getPreferredSize().height);
 			
 			this.setVerticalAlignment(SwingConstants.TOP);
 			
@@ -125,28 +127,29 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 	
 	private Applet m_applet;
 	
-	Font m_fNormal = new Font("Verdana", 0, 13);
-	private Font m_fLink = new Font("Verdana", Font.BOLD, 14);
+	Font m_fNormal;
+	private Font m_fLink = new Font("Verdana", Font.BOLD, 20);
 
 	Color m_cNormal = new Color(68, 68, 68);
 	Color m_cHeader = new Color(0, 0, 128);
 	
-	public AnonPropertyTable(Applet a_applet, boolean a_bHide3rdRow)
+	public AnonPropertyTable(Applet a_applet, boolean a_bHide3rdRow, int a_colSizeOne, int a_colSizeTwo, int a_fontSize)
 	{
+		m_fNormal = new Font("Verdana", 0, a_fontSize);
 		m_model = new AnonPropertyTableModel();
 		m_cellRenderer = new AnonPropertyCellRenderer();
 		m_applet = a_applet;
 		
 		setModel(m_model);
 		setBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, new Color(204, 204, 204)));
-		setDefaultRenderer(String.class, m_cellRenderer);
+		//setDefaultRenderer(String.class, m_cellRenderer);
 		setDefaultRenderer(Object.class, m_cellRenderer);
-		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		setRowHeight(23);
+		//setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		setRowHeight(18);
 		
-		setWidth(0, 130);
-		setWidth(1, 350);
-		setWidth(2, 110);
+		setWidth(0, a_colSizeOne);
+		setWidth(1, a_colSizeTwo);
+
 		
 		if(a_bHide3rdRow) getColumnModel().removeColumn(getColumnModel().getColumn(2));
 		
@@ -158,6 +161,12 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 		addMouseListener(this);
 		addMouseMotionListener(this);
 	}
+	/*
+	  public Component prepareEditor(TableCellEditor tce, int r, int c){
+		     Component comp = super.prepareEditor(tce, r, c);
+		     comp.setFont(m_fNormal);
+		     return comp;
+		  }*/
 	
 	public void setWidth(int col, int width)
 	{

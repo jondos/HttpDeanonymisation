@@ -1,3 +1,4 @@
+package privacytest;
 import java.awt.Color;
 
 /**
