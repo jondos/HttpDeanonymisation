@@ -226,6 +226,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 			String line;
 			Socket sock;
 
+			// System.out.println("Document host is: " + host + " with IP address " + InetAddress.getByName(host).getHostAddress());
+			
 			if (m_serverDomain != null)
 			{
 				host = m_serverDomain;
@@ -233,13 +235,13 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 			if(a_bUseSSL)
 			{
-				System.out.println("Creating SSL socket...");
+				System.out.println("Creating SSL socket to host " + host +  "...");
 				SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 				sock = factory.createSocket(host, 443);
 			}
 			else
 			{
-				System.out.println("Creating http socket...");
+				System.out.println("Creating http socket to host " + host + "...");
 				sock = new Socket(host, 80);
 			}
 			

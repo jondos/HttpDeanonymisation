@@ -54,7 +54,14 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 				setForeground(m_cHeader);
 				setToolTipText(((AnonPropertyAction) value).getUrl());
 			}
-			AnonPropertyTable.this.setRowHeight(this.getPreferredSize().height);
+			if (this.getPreferredSize().height > 1)
+			{
+				AnonPropertyTable.this.setRowHeight(this.getPreferredSize().height);
+			}
+			else
+			{
+				AnonPropertyTable.this.setRowHeight(1);
+			}
 			
 			this.setVerticalAlignment(SwingConstants.TOP);
 			
