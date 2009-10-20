@@ -5,10 +5,12 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Locale;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.URL;
 
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.SSLSocket;
@@ -18,6 +20,10 @@ import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+
+import netscape.javascript.JSObject;
+
+
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -159,7 +165,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		}
 		
 		m_discoveredIP = getParameter("DISCOVERED_IP");
-		m_bUseSSL = !(getParameter("USE_SSL") == null || !getParameter("USE_SSL").equalsIgnoreCase("true"));
+		m_bUseSSL = getParameter("USE_SSL") != null && getParameter("USE_SSL").equalsIgnoreCase("true");
 		
 		m_targetURL = getParameter("SERVER_URL_FOR_IP");
 		m_serverDomain = getParameter("SERVER_DOMAIN");
@@ -173,6 +179,31 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 		setSize(width_column_one + width_column_two + width_column_three, m_height);
 		createRootPanel();
+		
+		String strJSImportJavaScriptID = "function importJavaScriptByID(a_sourceID) { var elemScriptSource = document.getElementById(a_sourceID); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) { var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); document.getElementsByTagName(\"head\")[0].appendChild(jsImport);}} ";
+		strJSImportJavaScriptID += "importJavaScriptByID(\"lib.js.php\");";
+		strJSImportJavaScriptID += "importJavaScriptByID(\"messages.php\");";
+		//strJSImportJavaScriptID += "importJavaScriptByID(\"proxybypass.js.php\");";
+		strJSImportJavaScriptID += "importJavaScriptByID(\"additionalInfoTable.js.php\");";
+		
+		/*
+		if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
+		{
+			JSObject win = (JSObject) JSObject.getWindow(this);
+			win.eval(strJSImportJavaScriptID);
+		}
+		 */
+		
+		/*
+		try 
+		{
+			// for netscape browsers
+			getAppletContext().showDocument(new URL("javascript:" + strJSImportJavaScriptID));
+		}
+		catch (MalformedURLException me) 
+		{ 
+			
+		}*/
 	}
 
 	public void start()
@@ -249,9 +280,12 @@ public class RevealerApplet extends JApplet implements ActionListener
 			sourceIP = sock.getLocalAddress().getHostAddress();
 			System.out.println("Got host address:" + sourceIP);
 			
-			if(!m_vecInternalIPs.contains(sourceIP))
+			if (!sock.getLocalAddress().isLoopbackAddress()) // TODO: use reflection for JAVA 1.3 compatibility
 			{
-				m_vecInternalIPs.addElement(sourceIP);
+				if(!m_vecInternalIPs.contains(sourceIP))
+				{
+					m_vecInternalIPs.addElement(sourceIP);
+				}
 			}
 
 			
@@ -443,7 +477,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		cRoot.insets = new Insets(0, 0, 5, 0);
 
 		AnonPropertyTable table = new AnonPropertyTable(this, true, width_column_one, width_column_two - width_column_three, m_fontSize);
-		table.add(new AnonProperty(myResources.getString(MSG_JAVA_IS_ACTIVATED), myResources.getString(MSG_JAVA_ANON_BAD), AnonProperty.RATING_BAD));
+		table.add(new AnonProperty(myResources.getString(MSG_JAVA_IS_ACTIVATED), myResources.getString(MSG_JAVA_ANON_BAD), 
+				(m_vecExternalIPs.size() > 0 ? AnonProperty.RATING_BAD : AnonProperty.RATING_OKISH)));
 		rootPanel.add(table, cRoot);
 
 		cRoot.fill = GridBagConstraints.NONE;
