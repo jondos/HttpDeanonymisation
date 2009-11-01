@@ -89,6 +89,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 	{
 		super.init();
 		
+		URL urlDocumentBase;
+		
 		System.out.println("Startup!");
 
 		if(getParameter("WIDTH_COLUMN_ONE") != null)
@@ -180,19 +182,39 @@ public class RevealerApplet extends JApplet implements ActionListener
 		setSize(width_column_one + width_column_two + width_column_three, m_height);
 		createRootPanel();
 		
-		String strJSImportJavaScriptID = "function importJavaScriptByID(a_sourceID) { var elemScriptSource = document.getElementById(a_sourceID); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) { var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); document.getElementsByTagName(\"head\")[0].appendChild(jsImport);}} ";
-		strJSImportJavaScriptID += "importJavaScriptByID(\"lib.js.php\");";
-		strJSImportJavaScriptID += "importJavaScriptByID(\"messages.php\");";
-		//strJSImportJavaScriptID += "importJavaScriptByID(\"proxybypass.js.php\");";
-		strJSImportJavaScriptID += "importJavaScriptByID(\"additionalInfoTable.js.php\");";
+		String strJSImportJavaScriptID = "";
 		
-		/*
+		if (m_vecExternalIPs.size() > 0)
+		{
+			strJSImportJavaScriptID += " var bRevealerAppletIPFound = true; ";
+		}
+		
+		strJSImportJavaScriptID += "function importJavaScriptByID(a_sourceIDs) {var elemScriptSource = document.getElementById(a_sourceIDs.shift()); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) {var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); if (a_sourceIDs.length > 0) { jsImport.onreadystatechange = function () { if (this.readyState == 'complete' || this.readyState == 'loaded') importJavaScriptByID(a_sourceIDs); }; jsImport.onload = function() {importJavaScriptByID(a_sourceIDs);};} document.getElementsByTagName(\"head\")[0].appendChild(jsImport); }}";
+		strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"lib.js.php.jpg\", \"messages.js.php.jpg\", \"additionalInfoTable.js.php.jpg\"));";
+		
+		
 		if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
 		{
 			JSObject win = (JSObject) JSObject.getWindow(this);
 			win.eval(strJSImportJavaScriptID);
 		}
-		 */
+		
+		try
+		{
+			urlDocumentBase = new URL(getParameter("DocumentBase"));
+		} 
+		catch (MalformedURLException e1)
+		{
+			urlDocumentBase = null;
+		}
+		if (urlDocumentBase != null && !urlDocumentBase.equals(getDocumentBase()))
+		{
+			System.out.println("Trying to open " + urlDocumentBase + " in browser window...");
+	
+			getAppletContext().showDocument(urlDocumentBase, "_self");
+		}
+		
+		
 		
 		/*
 		try 
