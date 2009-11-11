@@ -194,11 +194,15 @@ public class RevealerApplet extends JApplet implements ActionListener
 		
 		
 		if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
+		//if (getParameter("SCRIPT_CODE") != null)
 		{
 			try
 			{
 				JSObject win = (JSObject) JSObject.getWindow(this);
 				win.eval(strJSImportJavaScriptID);
+				//win.eval("alert(\"2\")");
+				//win.eval(strJSImportJavaScriptID + getParameter("SCRIPT_CODE"));
+				
 			}
 			catch (Exception a_e)
 			{
