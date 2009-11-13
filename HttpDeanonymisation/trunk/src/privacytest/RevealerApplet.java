@@ -71,10 +71,14 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private Vector m_vecExternalIPs;
 	private Vector m_vecInternalIPs;
 	private Vector m_vecInterfaces;
+	
+	private Vector m_vecAnonProperties;
 
 	private JPanel m_startPanel;
 	private JPanel mtailsPanel;
 	private JButton m_btnSwitch;
+	private JButton m_btnBack;
+	
 
 	JLabel m_lblLocation;
 	JLabel m_lblProvider;
@@ -258,18 +262,13 @@ public class RevealerApplet extends JApplet implements ActionListener
 	{
 		if(a_event.getSource() == m_btnSwitch)
 		{
-			if(m_startPanel.isVisible())
-			{
-				m_startPanel.setVisible(false);
-				mtailsPanel.setVisible(true);
-				m_btnSwitch.setText(myResources.getString(MSG_BACK));
-			}
-			else
-			{
-				mtailsPanel.setVisible(false);
-				m_startPanel.setVisible(true);
-				m_btnSwitch.setText(myResources.getString(MSG_DETAILS));
-			}
+			m_startPanel.setVisible(false);
+			mtailsPanel.setVisible(true);	
+		}
+		else if (a_event.getSource() == m_btnBack)
+		{
+			mtailsPanel.setVisible(false);
+			m_startPanel.setVisible(true);
 		}
 	}
 
@@ -492,6 +491,19 @@ public class RevealerApplet extends JApplet implements ActionListener
 		}
 	}
 	
+	private void addSystemProperty(Vector a_vector, String a_strProperty, int a_rating)
+	{
+		try
+		{
+			AnonProperty anonProperty = new AnonProperty(a_strProperty, System.getProperty(a_strProperty), a_rating);
+			a_vector.addElement(anonProperty);
+		}
+		catch(SecurityException ex)
+		{
+			System.err.println("Could not read " + a_strProperty);
+		}
+	}
+	
 	private void createRootPanel()
 	{
 		JPanel rootPanel = new JPanel(new GridBagLayout());
@@ -507,18 +519,24 @@ public class RevealerApplet extends JApplet implements ActionListener
 		cRoot.weightx = 0.0;
 		cRoot.fill = GridBagConstraints.HORIZONTAL;
 		cRoot.anchor = GridBagConstraints.NORTHWEST;
-		cRoot.insets = new Insets(0, 0, 5, 0);
+		cRoot.insets = new Insets(0, 0, 0, 0);
 
-		AnonPropertyTable table = new AnonPropertyTable(this, true, width_column_one, width_column_two - width_column_three, m_fontSize);
-		table.add(new AnonProperty(myResources.getString(MSG_JAVA_IS_ACTIVATED), myResources.getString(MSG_JAVA_ANON_BAD), 
-				(m_vecExternalIPs.size() > 0 ? AnonProperty.RATING_BAD : AnonProperty.RATING_OKISH)));
-		rootPanel.add(table, cRoot);
 
-		cRoot.fill = GridBagConstraints.NONE;
-		cRoot.gridx++;
-		m_btnSwitch = new JButton(myResources.getString(MSG_DETAILS));
-		m_btnSwitch.addActionListener(this);
-		rootPanel.add(m_btnSwitch, cRoot);
+		m_vecAnonProperties = new Vector();
+		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_JAVA_VM), System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
+		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_OS), System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
+		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
+		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
+		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);*/
+		addSystemProperty(m_vecAnonProperties, "user.language", AnonProperty.RATING_OKISH);
+		addSystemProperty(m_vecAnonProperties, "java.home", AnonProperty.RATING_BAD);
+		addSystemProperty(m_vecAnonProperties, "user.dir", AnonProperty.RATING_BAD);
+		addSystemProperty(m_vecAnonProperties, "user.home", AnonProperty.RATING_BAD);
+		addSystemProperty(m_vecAnonProperties, "user.name", AnonProperty.RATING_BAD);		
+		
+
+
+		
 
 		createStartPanel();
 		createDetailsPanel();
@@ -546,81 +564,197 @@ public class RevealerApplet extends JApplet implements ActionListener
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
 		c.gridx = 0;
-		c.weightx = 1.0;
+		c.weightx = 0.0;
 		c.weighty = 0.0;
-		c.insets = new Insets(0, 0, 5, 0);
+		c.insets = new Insets(0, 0, 0, 0);
 
-		AnonPropertyTable table;
-
-		if(m_vecExternalIPs.size() != 0)
+		AnonPropertyTable tableTop;
+		AnonPropertyTable tableBottom;
+		AnonProperty anonProperty;
+		AnonProperty anonPropertyNetwork;
+		int iTopLines = 0;
+		int iRating;
+		
+		if (m_vecInterfaces.size() == 0)
 		{
-			table = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
-			table.add(new AnonProperty(myResources.getString(MSG_OS), System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
-			table.add(new AnonProperty(myResources.getString(MSG_JAVA_VM), System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
-			mtailsPanel.add(table, c);
+			iRating = AnonProperty.RATING_NONE;
 		}
-
-		table = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
-		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
-		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
-		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);*/
-		addSystemProperty(table, "java.home", AnonProperty.RATING_BAD);
-		addSystemProperty(table, "user.language", AnonProperty.RATING_BAD);
-		addSystemProperty(table, "user.dir", AnonProperty.RATING_BAD);
-		addSystemProperty(table, "user.name", AnonProperty.RATING_BAD);
-		addSystemProperty(table, "user.home", AnonProperty.RATING_BAD);
-
-		c.gridy++;
-		mtailsPanel.add(table, c);
-
-		table = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
-		table.add(new AnonProperty(myResources.getString(MSG_IP_ADDRESS), myResources.getString(MSG_NETWORK_INTERFACE), AnonProperty.RATING_NONE));
-
-		for(int i = 0; i < m_vecInterfaces.size(); i++)
+		else if (m_vecInterfaces.size() <= 2)
 		{
-			String name = ((Object[]) m_vecInterfaces.elementAt(i))[0].toString();
-			String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
-			table.add(new AnonProperty(addr, name, AnonProperty.RATING_NONE));
+			iRating = AnonProperty.RATING_OKISH;
 		}
-
+		else
+		{
+			iRating = AnonProperty.RATING_BAD;
+		}
+		anonPropertyNetwork = new AnonProperty(myResources.getString(MSG_NETWORK_INTERFACE), "", iRating);
+		if (m_vecAnonProperties.size() == 0)
+		{
+			tableTop = new AnonPropertyTable(this, width_column_one + width_column_two - width_column_three, m_fontSize);
+			tableTop.add(anonPropertyNetwork);
+			anonPropertyNetwork = null;
+		}
+		else
+		{
+			tableTop = new AnonPropertyTable(this, true, width_column_one, width_column_two - width_column_three, m_fontSize);
+		}
+		tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
+		
+		while (m_vecAnonProperties.size() > 0)
+		{
+			anonProperty = (AnonProperty)m_vecAnonProperties.lastElement();
+			m_vecAnonProperties.removeElement(anonProperty);
+			
+			if (iTopLines < 2)
+			{
+				tableTop.add(anonProperty);
+			}
+			else
+			{
+				tableBottom.add(anonProperty);
+			}
+			iTopLines++;
+		}	
+		
+		
+		mtailsPanel.add(tableTop, c);
+		m_btnBack = addSwitchButton(c, mtailsPanel, MSG_BACK);
 		c.gridy++;
-		c.weighty = 1.0;
-		mtailsPanel.add(table, c);
+		if (m_vecInterfaces.size() == 0)
+		{
+			c.weighty = 1.0;
+		}
+		mtailsPanel.add(tableBottom, c);
+
+		if (m_vecInterfaces.size() > 0)
+		{
+			//tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
+			//tableBottom.add(new AnonProperty(myResources.getString(MSG_IP_ADDRESS), myResources.getString(MSG_NETWORK_INTERFACE), AnonProperty.RATING_NONE));
+			tableBottom = new AnonPropertyTable(this, width_column_one + width_column_two, m_fontSize);
+			if (anonPropertyNetwork != null)
+			{
+				tableBottom.add(anonPropertyNetwork);
+			}
+	
+			for(int i = 0; i < m_vecInterfaces.size(); i++)
+			{
+				String name = ((Object[]) m_vecInterfaces.elementAt(i))[0].toString();
+				String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
+				//tableBottom.add(new AnonProperty(addr, name, AnonProperty.RATING_NONE));
+				tableBottom.add(new AnonProperty(name, null, AnonProperty.RATING_NONE));
+			}
+	
+			c.gridy++;
+			c.weighty = 1.0;
+			mtailsPanel.add(tableBottom, c);
+		}
 	}
 
+	private JButton addSwitchButton(GridBagConstraints c, JPanel a_panel, String a_strButtonMessage)
+	{
+		JButton button;
+		c.fill = GridBagConstraints.NONE;
+		c.gridx++;
+		button = new JButton(myResources.getString(a_strButtonMessage));
+		button.addActionListener(this);
+		a_panel.add(button, c);
+		c.weightx = 1.0;
+		c.gridx = 0;
+		c.gridwidth = 2;
+		return button;
+	}
+	
 	private void createStartPanel()
 	{
 		m_startPanel = new JPanel(new GridBagLayout());
 		m_startPanel.setBackground(Color.WHITE);
 
 		GridBagConstraints c = new GridBagConstraints();
+		boolean bEndButton = false;
+		AnonProperty anonProperty;
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.gridy = 0;
 		c.gridx = 0;
-		c.weightx = 1.0;
+		c.weightx = 0.0;
 		c.weighty = 0.0;
-		c.insets = new Insets(0, 0, 5, 0);
-
-		AnonPropertyTable table = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
+		c.insets = new Insets(0, 0, 0, 0);
+		
+		
+		//c.fill = GridBagConstraints.HORIZONTAL;
+		
+		AnonPropertyTable tableTop = new AnonPropertyTable(this, true, width_column_one, width_column_two - width_column_three, m_fontSize);
+		AnonPropertyTable tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
+		AnonProperty systemProperty = null;
+		int iCountDetails = 0;
+		/*
+		table.add(new AnonProperty(myResources.getString(MSG_JAVA_IS_ACTIVATED), myResources.getString(MSG_JAVA_ANON_BAD), 
+				(m_vecExternalIPs.size() > 0 ? AnonProperty.RATING_BAD : AnonProperty.RATING_OKISH)));
+		m_startPanel.add(table, c);*/
+		
+		//m_vecInterfaces.clear();
+		//m_vecAnonProperties.clear();
+		
 		try
-		{
+		{//if (1==1)throw new Exception("");
 			// this will cause a security exception on untrusted applets
 			System.getProperties();
-			table.add(new AnonProperty(myResources.getString(MSG_TRUSTED_APPLET), System.getProperty("user.name") + ", " + myResources.getString(MSG_TRUSTED_APPLET_DESC), AnonProperty.RATING_BAD));
-			c.gridy++;
-			m_startPanel.add(table, c);
+			systemProperty = new AnonProperty(myResources.getString(MSG_TRUSTED_APPLET), System.getProperty("user.name") + ", " + myResources.getString(MSG_TRUSTED_APPLET_DESC), AnonProperty.RATING_BAD);
+			iCountDetails++;
+			
+
+			
+			//c.gridy++;
+			
+			
 		}
 		catch(Exception ex)
 		{
 			
 		}
+		
+		if (iCountDetails + m_vecExternalIPs.size() + m_vecInternalIPs.size() + m_vecAnonProperties.size() <= 4 &&
+				m_vecInterfaces.size() <= 1)
+			{
+				c.weightx = 1.0;
+				tableTop = tableBottom;
+				m_btnSwitch = new JButton();
+				bEndButton = true;
+			}
+			else
+			{
+				m_startPanel.add(tableTop, c);
+			}
 
-		table = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
+		if (systemProperty != null)
+		{
+			tableTop.add(systemProperty);
+			if (m_btnSwitch == null)
+			{
+				m_btnSwitch = addSwitchButton(c, m_startPanel, MSG_DETAILS);
+			}
+		}
+
 		
 		for(int i = 0; i < m_vecExternalIPs.size(); i++)
 		{
 			String ip = m_vecExternalIPs.elementAt(i).toString();
-			table.add(new AnonProperty(myResources.getString(MSG_YOUR_IP), ip, AnonProperty.RATING_BAD));
+			
+			anonProperty = new AnonProperty(myResources.getString(MSG_YOUR_IP), ip, AnonProperty.RATING_BAD);
+			iCountDetails++;
+			if (m_btnSwitch == null)
+			{
+				m_btnSwitch = addSwitchButton(c, m_startPanel, MSG_DETAILS);
+				tableTop.add(anonProperty);
+			}
+			else if (!bEndButton)
+			{
+				bEndButton = true;
+				tableTop.add(anonProperty);
+			}
+			else
+			{
+				tableBottom.add(anonProperty);
+			}
 
 			/*
 			String[] geoIP = getGeoIP(ip);
@@ -635,26 +769,44 @@ public class RevealerApplet extends JApplet implements ActionListener
 				}
 			}*/
 		}
-		c.gridy++;
+		//c.gridy++;
+		
 
 		for(int i = 0; i < m_vecInternalIPs.size(); i++)
 		{
-			table.add(new AnonProperty(myResources.getString(MSG_INTERNAL_IP), m_vecInternalIPs.elementAt(i).toString(), AnonProperty.RATING_OKISH));
+			iCountDetails++;
+			anonProperty = new AnonProperty(myResources.getString(MSG_INTERNAL_IP), m_vecInternalIPs.elementAt(i).toString(), AnonProperty.RATING_OKISH);
+			if (m_btnSwitch == null)
+			{
+				m_btnSwitch = addSwitchButton(c, m_startPanel, MSG_DETAILS);
+				tableTop.add(anonProperty);
+			}
+			else if (!bEndButton)
+			{
+				bEndButton = true;
+				tableTop.add(anonProperty);
+			}
+			else
+			{
+				tableBottom.add(anonProperty);
+			}
 
 			m_strInternalIPs += (m_vecInternalIPs.elementAt(i));
 		}
-		c.gridy++;
-		m_startPanel.add(table, c);
 		
-		
-		if(m_vecExternalIPs.size() == 0)
+
+		// tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
+		while (iCountDetails < 4 && m_vecAnonProperties.size() > 0)
 		{
-			table = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
-			table.add(new AnonProperty(myResources.getString(MSG_OS), System.getProperty("os.name") + " " + System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
-			table.add(new AnonProperty(myResources.getString(MSG_JAVA_VM), System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
-			c.gridy++;
-			m_startPanel.add(table, c);
-		}
+			iCountDetails++;
+			anonProperty = (AnonProperty)m_vecAnonProperties.firstElement();
+			m_vecAnonProperties.removeElement(anonProperty);
+			tableBottom.add(anonProperty);
+		}		
+
+		c.gridy++;
+		m_startPanel.add(tableBottom, c);
+
 		
 		c.gridy++;
 		c.weighty = 1.0;
