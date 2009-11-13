@@ -540,7 +540,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 		createStartPanel();
 		createDetailsPanel();
-
+		
 		cRoot.gridx = 0;
 		cRoot.gridy++;
 		cRoot.gridwidth = 2;
@@ -549,7 +549,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		cRoot.fill = GridBagConstraints.BOTH;
 		cRoot.insets = new Insets(0, 0, 0, 0);
 		rootPanel.add(m_startPanel, cRoot);
-
+		 
+		
 		cRoot.gridy++;
 		rootPanel.add(mtailsPanel, cRoot);
 	}
@@ -686,10 +687,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		AnonPropertyTable tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
 		AnonProperty systemProperty = null;
 		int iCountDetails = 0;
-		/*
-		table.add(new AnonProperty(myResources.getString(MSG_JAVA_IS_ACTIVATED), myResources.getString(MSG_JAVA_ANON_BAD), 
-				(m_vecExternalIPs.size() > 0 ? AnonProperty.RATING_BAD : AnonProperty.RATING_OKISH)));
-		m_startPanel.add(table, c);*/
+	
 		
 		//m_vecInterfaces.clear();
 		//m_vecAnonProperties.clear();
