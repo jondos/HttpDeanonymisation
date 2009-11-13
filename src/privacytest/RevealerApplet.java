@@ -688,7 +688,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		AnonProperty systemProperty = null;
 		int iCountDetails = 0;
 	
-		
+		//m_vecExternalIPs.clear();
+		//m_vecInternalIPs.clear();
 		//m_vecInterfaces.clear();
 		//m_vecAnonProperties.clear();
 		
@@ -698,30 +699,24 @@ public class RevealerApplet extends JApplet implements ActionListener
 			System.getProperties();
 			systemProperty = new AnonProperty(myResources.getString(MSG_TRUSTED_APPLET), System.getProperty("user.name") + ", " + myResources.getString(MSG_TRUSTED_APPLET_DESC), AnonProperty.RATING_BAD);
 			iCountDetails++;
-			
-
-			
-			//c.gridy++;
-			
-			
 		}
 		catch(Exception ex)
 		{
-			
+			// ignore
 		}
 		
 		if (iCountDetails + m_vecExternalIPs.size() + m_vecInternalIPs.size() + m_vecAnonProperties.size() <= 4 &&
 				m_vecInterfaces.size() <= 1)
-			{
-				c.weightx = 1.0;
-				tableTop = tableBottom;
-				m_btnSwitch = new JButton();
-				bEndButton = true;
-			}
-			else
-			{
-				m_startPanel.add(tableTop, c);
-			}
+		{
+			c.weightx = 1.0;
+			tableTop = tableBottom;
+			m_btnSwitch = new JButton();
+			bEndButton = true;
+		}
+		else
+		{
+			m_startPanel.add(tableTop, c);
+		}
 
 		if (systemProperty != null)
 		{
@@ -739,20 +734,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			
 			anonProperty = new AnonProperty(myResources.getString(MSG_YOUR_IP), ip, AnonProperty.RATING_BAD);
 			iCountDetails++;
-			if (m_btnSwitch == null)
-			{
-				m_btnSwitch = addSwitchButton(c, m_startPanel, MSG_DETAILS);
-				tableTop.add(anonProperty);
-			}
-			else if (!bEndButton)
-			{
-				bEndButton = true;
-				tableTop.add(anonProperty);
-			}
-			else
-			{
-				tableBottom.add(anonProperty);
-			}
+			bEndButton = addSwitchButton(tableTop, tableBottom, anonProperty, bEndButton, c);
 
 			/*
 			String[] geoIP = getGeoIP(ip);
@@ -774,20 +756,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			iCountDetails++;
 			anonProperty = new AnonProperty(myResources.getString(MSG_INTERNAL_IP), m_vecInternalIPs.elementAt(i).toString(), AnonProperty.RATING_OKISH);
-			if (m_btnSwitch == null)
-			{
-				m_btnSwitch = addSwitchButton(c, m_startPanel, MSG_DETAILS);
-				tableTop.add(anonProperty);
-			}
-			else if (!bEndButton)
-			{
-				bEndButton = true;
-				tableTop.add(anonProperty);
-			}
-			else
-			{
-				tableBottom.add(anonProperty);
-			}
+			bEndButton = addSwitchButton(tableTop, tableBottom, anonProperty, bEndButton, c);
+
 
 			m_strInternalIPs += (m_vecInternalIPs.elementAt(i));
 		}
@@ -799,8 +769,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 			iCountDetails++;
 			anonProperty = (AnonProperty)m_vecAnonProperties.firstElement();
 			m_vecAnonProperties.removeElement(anonProperty);
-			tableBottom.add(anonProperty);
-		}		
+			bEndButton = addSwitchButton(tableTop, tableBottom, anonProperty, bEndButton, c);
+		}
 
 		c.gridy++;
 		m_startPanel.add(tableBottom, c);
@@ -810,5 +780,26 @@ public class RevealerApplet extends JApplet implements ActionListener
 		c.weighty = 1.0;
 		c.fill = GridBagConstraints.VERTICAL;
 		m_startPanel.add(new JLabel(), c);
+	}
+	
+	private boolean addSwitchButton(AnonPropertyTable tableTop, AnonPropertyTable tableBottom, 
+			AnonProperty anonProperty, boolean bEndButton, GridBagConstraints c)
+	{
+		if (m_btnSwitch == null)
+		{
+			m_btnSwitch = addSwitchButton(c, m_startPanel, MSG_DETAILS);
+			tableTop.add(anonProperty);
+			return false;
+		}
+		else if (!bEndButton)
+		{
+			tableTop.add(anonProperty);
+			return true;
+		}
+		else
+		{
+			tableBottom.add(anonProperty);
+			return true;
+		}
 	}
 }
