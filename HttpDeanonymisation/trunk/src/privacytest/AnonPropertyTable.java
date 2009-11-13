@@ -42,7 +42,7 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 				setText("");
 				return;
 			}
-		
+			
 			if(value instanceof AnonProperty)
 			{
 				setBackground(((AnonProperty)value).getRatingColor());
@@ -54,6 +54,7 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 				setForeground(m_cHeader);
 				setToolTipText(((AnonPropertyAction) value).getUrl());
 			}
+			/*
 			if (this.getPreferredSize().height > 1)
 			{
 				AnonPropertyTable.this.setRowHeight(this.getPreferredSize().height);
@@ -61,7 +62,7 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 			else
 			{
 				AnonPropertyTable.this.setRowHeight(1);
-			}
+			}*/
 			
 			this.setVerticalAlignment(SwingConstants.TOP);
 			
