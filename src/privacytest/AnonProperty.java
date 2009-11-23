@@ -32,6 +32,21 @@ class AnonProperty
 		m_rating = a_rating;
 	}
 	
+	public boolean equals(Object a_object)
+	{
+		if (a_object == null || !(a_object instanceof AnonProperty))
+		{
+			return false;
+		}
+		
+		return (((AnonProperty)a_object).getName().equals(this.getName()));
+	}
+	
+	public int hashCode()
+	{
+		return this.getName().hashCode();
+	}
+	
 	public Color getRatingColor()
 	{
 		switch(m_rating)
@@ -46,6 +61,11 @@ class AnonProperty
 		case RATING_GOOD:
 			return Color.green;
 		}
+	}
+	
+	public String getName()
+	{
+		return m_strName;
 	}
 	
 	public String toString()

@@ -19,7 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
-import javax.swing.UIManager;
+
 
 import netscape.javascript.JSObject;
 
@@ -30,8 +30,13 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 import java.util.Vector;
+
+import anon.util.Base64;
+
 
 //import util.Messages;
 
@@ -52,13 +57,15 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private final static String MSG_DETAILS = "details";
 	private final static String MSG_BACK = "back";	
 	private static final String MSG_JAVA_VM = "javaVM";
+	private static final String MSG_LANG = "language";
+	private static final String MSG_COUNTRY = "country";
 	private static final String MSG_WHOIS_DOMAIN = "whoisDomain";
 	private static final String MSG_REVERSE_DNS = "reverseDNS";
 	
 	final static String CRLF = "\r\n";
 	final static String HTTP_HEADER_END = CRLF+CRLF; //end of http message headers
 	
-	public String m_strInternalIPs;
+	
 
 	private String m_targetURL;
 	private String m_lookupURL = "/geoip/lookup.php";
@@ -68,8 +75,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private int m_height = 300;
 	private int m_fontSize = 14;
 	
-	private Vector m_vecExternalIPs;
-	private Vector m_vecInternalIPs;
+	private IPInfo m_externalIP;
+	private IPInfo m_internalIP;
 	private Vector m_vecInterfaces;
 	
 	private Vector m_vecAnonProperties;
@@ -176,8 +183,6 @@ public class RevealerApplet extends JApplet implements ActionListener
 		m_targetURL = getParameter("SERVER_URL_FOR_IP");
 		m_serverDomain = getParameter("SERVER_DOMAIN");
 
-		m_vecExternalIPs = new Vector();
-		m_vecInternalIPs = new Vector();
 		m_vecInterfaces = new Vector();
 
 		System.out.println("Getting IPs...");
@@ -186,27 +191,23 @@ public class RevealerApplet extends JApplet implements ActionListener
 		setSize(width_column_one + width_column_two + width_column_three, m_height);
 		createRootPanel();
 		
-		String strJSImportJavaScriptID = "";
+		String strJSImportJavaScriptID = " bJavaEnabled = true;";
 		
-		if (m_vecExternalIPs.size() > 0)
+		if (m_externalIP != null && isSiteLocalAddress(m_externalIP.ip) <= 0 && m_externalIP.strBase64 != null)
 		{
-			strJSImportJavaScriptID += " var bRevealerAppletIPFound = true; ";
+			strJSImportJavaScriptID += " ipInfoJava = '" + m_externalIP.strBase64 + "'; ";
 		}
 		
 		strJSImportJavaScriptID += "function importJavaScriptByID(a_sourceIDs) {var elemScriptSource = document.getElementById(a_sourceIDs.shift()); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) {var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); if (a_sourceIDs.length > 0) { jsImport.onreadystatechange = function () { if (this.readyState == 'complete' || this.readyState == 'loaded') importJavaScriptByID(a_sourceIDs); }; jsImport.onload = function() {importJavaScriptByID(a_sourceIDs);};} document.getElementsByTagName(\"head\")[0].appendChild(jsImport); }}";
-		strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"lib.js.php.jpg\", \"messages.js.php.jpg\", \"additionalInfoTable.js.php.jpg\"));";
+		strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"lib.js.php.jpg\", \"messages.js.php.jpg\", \"additionalInfoTable.js.php.jpg\", \"proxybypass.js.php.jpg\"));";
 		
 		
 		if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
-		//if (getParameter("SCRIPT_CODE") != null)
 		{
 			try
 			{
 				JSObject win = (JSObject) JSObject.getWindow(this);
 				win.eval(strJSImportJavaScriptID);
-				//win.eval("alert(\"2\")");
-				//win.eval(strJSImportJavaScriptID + getParameter("SCRIPT_CODE"));
-				
 			}
 			catch (Exception a_e)
 			{
@@ -288,6 +289,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			String destIP;
 			String line;
 			Socket sock;
+			IPInfo ipinfo = new IPInfo();
 
 			// System.out.println("Document host is: " + host + " with IP address " + InetAddress.getByName(host).getHostAddress());
 			
@@ -312,12 +314,11 @@ public class RevealerApplet extends JApplet implements ActionListener
 			sourceIP = sock.getLocalAddress().getHostAddress();
 			System.out.println("Got host address:" + sourceIP);
 			
-			if (!sock.getLocalAddress().isLoopbackAddress()) // TODO: use reflection for JAVA 1.3 compatibility
+			if (!isLoopbackAddress(sock.getLocalAddress()))
 			{
-				if(!m_vecInternalIPs.contains(sourceIP))
-				{
-					m_vecInternalIPs.addElement(sourceIP);
-				}
+				m_internalIP = new IPInfo();
+				m_internalIP.ip = sock.getLocalAddress();
+				//m_internalIP.ip = InetAddress.getByName("95.40.26.1");
 			}
 
 			
@@ -336,25 +337,80 @@ public class RevealerApplet extends JApplet implements ActionListener
 				destIP += line;
 			}
 			destIP = destIP.trim();
+			ipinfo.strBase64 = destIP;
+			destIP = Base64.decodeToString(destIP);			
+			StringTokenizer keyTokenizer = new StringTokenizer(destIP, ";");
+			StringTokenizer valueTokenizer;
+			Hashtable ipAttributes = new Hashtable();
+			while(keyTokenizer.hasMoreTokens())
+			{
+				valueTokenizer = new StringTokenizer(keyTokenizer.nextToken(), "=");
+				if (valueTokenizer.countTokens() == 2)
+				{
+					ipAttributes.put(valueTokenizer.nextToken(), valueTokenizer.nextToken());
+				}
+			}
+			
+			ipinfo.distribution = Integer.parseInt((String)ipAttributes.get("ProxyDistribution"));
+			ipinfo.strProxy = (String)ipAttributes.get("ProxyName");
+			destIP = (String)ipAttributes.get("IP");
+				
 			
 			System.out.println("Got IP: " + destIP);
 			
-			if(m_discoveredIP != null && m_discoveredIP.equals(destIP)) return;
+			if (m_discoveredIP != null && m_discoveredIP.equals(destIP)) return;
 
 			// simple check to see if we have a valid ip address
 			// if it's an invalid ip it will throw an exception
-			InetAddress.getByName(destIP);
+			ipinfo.ip = InetAddress.getByName(destIP);
 
-			if(!m_vecExternalIPs.contains(destIP))
+			//ipinfo.ip = InetAddress.getByName("192.168.2.1");
+			if (isLoopbackAddress(ipinfo.ip))
 			{
-				m_vecExternalIPs.addElement(destIP);
+				return;
 			}
+			
+
+			m_externalIP = ipinfo;
+			
 		}
 		catch(Exception e)
 		{
 			System.err.println("Getting IP addresses from anontest URL failed!");
 			e.printStackTrace();
 		}
+	}
+	
+	private static int isSiteLocalAddress(InetAddress a_address)
+	{
+		try
+		{
+			return (a_address.isSiteLocalAddress()?1:0);
+		}
+		catch (Exception a_e)
+		{
+			// unknown
+			return -1;
+		}	
+	}
+	
+	private static boolean isLoopbackAddress(InetAddress a_address)
+	{
+		try
+		{
+			return a_address.isLoopbackAddress();
+		}
+		catch (Exception a_e)
+		{
+			// java 1.3
+		}
+		
+		if (a_address.getHostAddress().equals("127.0.0.1") || 
+			a_address.getHostAddress().equals("0:0:0:0:0:0:0:1"))
+		{
+			return true;
+		}
+		return false;
 	}
 
 	public String[] getGeoIP(String ip)
@@ -496,7 +552,10 @@ public class RevealerApplet extends JApplet implements ActionListener
 		try
 		{
 			AnonProperty anonProperty = new AnonProperty(a_strProperty, System.getProperty(a_strProperty), a_rating);
-			a_vector.addElement(anonProperty);
+			if (!a_vector.contains(anonProperty))
+			{
+				a_vector.addElement(anonProperty);
+			}
 		}
 		catch(SecurityException ex)
 		{
@@ -528,11 +587,14 @@ public class RevealerApplet extends JApplet implements ActionListener
 		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
 		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
 		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);*/
-		addSystemProperty(m_vecAnonProperties, "user.language", AnonProperty.RATING_OKISH);
+		
+		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_LANG), Locale.getDefault().getDisplayLanguage(myResources.getLocale()), AnonProperty.RATING_OKISH));
+		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_COUNTRY), Locale.getDefault().getDisplayCountry(myResources.getLocale()), AnonProperty.RATING_OKISH));
+		//addSystemProperty(m_vecAnonProperties, "user.language", AnonProperty.RATING_OKISH);	
 		addSystemProperty(m_vecAnonProperties, "java.home", AnonProperty.RATING_BAD);
 		addSystemProperty(m_vecAnonProperties, "user.dir", AnonProperty.RATING_BAD);
 		addSystemProperty(m_vecAnonProperties, "user.home", AnonProperty.RATING_BAD);
-		addSystemProperty(m_vecAnonProperties, "user.name", AnonProperty.RATING_BAD);		
+		addSystemProperty(m_vecAnonProperties, "user.name", AnonProperty.RATING_BAD);
 		
 
 
@@ -642,7 +704,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 				String name = ((Object[]) m_vecInterfaces.elementAt(i))[0].toString();
 				String addr = ((Object[]) m_vecInterfaces.elementAt(i))[1].toString();
 				//tableBottom.add(new AnonProperty(addr, name, AnonProperty.RATING_NONE));
-				tableBottom.add(new AnonProperty(name, null, AnonProperty.RATING_NONE));
+				tableBottom.add(new AnonProperty(name, "", AnonProperty.RATING_NONE));
 			}
 	
 			c.gridy++;
@@ -705,7 +767,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			// ignore
 		}
 		
-		if (iCountDetails + m_vecExternalIPs.size() + m_vecInternalIPs.size() + m_vecAnonProperties.size() <= 4 &&
+		if (iCountDetails + (m_externalIP != null?1:0) + (m_internalIP!= null?1:0) + m_vecAnonProperties.size() <= 4 &&
 				m_vecInterfaces.size() <= 1)
 		{
 			c.weightx = 1.0;
@@ -728,11 +790,39 @@ public class RevealerApplet extends JApplet implements ActionListener
 		}
 
 		
-		for(int i = 0; i < m_vecExternalIPs.size(); i++)
+		
+		if (m_externalIP != null)
 		{
-			String ip = m_vecExternalIPs.elementAt(i).toString();
+			String ip = m_externalIP.ip.getHostAddress();
+			int rating = AnonProperty.RATING_BAD;
+			String strText = myResources.getString(MSG_YOUR_IP);
+			if (m_externalIP.strProxy != null)
+			{
+				ip += " (" + m_externalIP.strProxy + ")";
+				if (m_externalIP.strProxy.equalsIgnoreCase("Tor"))
+				{
+					rating = AnonProperty.RATING_GOOD;
+				}
+				else if (m_externalIP.strProxy.equalsIgnoreCase("JonDonym"))
+				{
+					if (m_externalIP.distribution > 1)
+					{
+						rating = AnonProperty.RATING_GOOD;
+					}
+					else
+					{
+						rating = AnonProperty.RATING_OKISH;
+					}
+				}
+			}
+			else if (isSiteLocalAddress(m_externalIP.ip) > 0)
+			{
+				rating = AnonProperty.RATING_OKISH;
+				strText = myResources.getString(MSG_INTERNAL_IP);
+			}
+		 
 			
-			anonProperty = new AnonProperty(myResources.getString(MSG_YOUR_IP), ip, AnonProperty.RATING_BAD);
+			anonProperty = new AnonProperty(strText, ip, rating);
 			iCountDetails++;
 			bEndButton = addSwitchButton(tableTop, tableBottom, anonProperty, bEndButton, c);
 
@@ -752,14 +842,19 @@ public class RevealerApplet extends JApplet implements ActionListener
 		//c.gridy++;
 		
 
-		for(int i = 0; i < m_vecInternalIPs.size(); i++)
+		if (m_internalIP != null)
 		{
+			int rating = AnonProperty.RATING_OKISH;
+			String strText = myResources.getString(MSG_INTERNAL_IP); 
+			if (isSiteLocalAddress(m_internalIP.ip) == 0)
+			{
+				// This seems to be an external address!
+				rating = AnonProperty.RATING_BAD;
+				strText = myResources.getString(MSG_YOUR_IP);
+			}
 			iCountDetails++;
-			anonProperty = new AnonProperty(myResources.getString(MSG_INTERNAL_IP), m_vecInternalIPs.elementAt(i).toString(), AnonProperty.RATING_OKISH);
+			anonProperty = new AnonProperty(strText, m_internalIP.ip.getHostAddress(), rating);
 			bEndButton = addSwitchButton(tableTop, tableBottom, anonProperty, bEndButton, c);
-
-
-			m_strInternalIPs += (m_vecInternalIPs.elementAt(i));
 		}
 		
 
@@ -801,5 +896,13 @@ public class RevealerApplet extends JApplet implements ActionListener
 			tableBottom.add(anonProperty);
 			return true;
 		}
+	}
+	
+	private class IPInfo
+	{
+		String strProxy;
+		int distribution = 0;
+		InetAddress ip;
+		String strBase64;
 	}
 }
