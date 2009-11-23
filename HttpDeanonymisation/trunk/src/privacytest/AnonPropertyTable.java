@@ -111,7 +111,10 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 		
 		public synchronized void add(AnonProperty a_prop)
 		{
-			m_properties.addElement(a_prop);
+			if (a_prop.getValue() != null)
+			{
+				m_properties.addElement(a_prop);
+			}
 		}
 		
 		public Object getValueAt(int rowIndex, int columnIndex)
