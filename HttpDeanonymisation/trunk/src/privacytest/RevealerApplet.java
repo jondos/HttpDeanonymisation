@@ -191,15 +191,18 @@ public class RevealerApplet extends JApplet implements ActionListener
 		setSize(width_column_one + width_column_two + width_column_three, m_height);
 		createRootPanel();
 		
-		String strJSImportJavaScriptID = " bJavaEnabled = true;";
+		String strJSImportJavaScriptID = " _versionJava = '" + System.getProperty("java.version").replace("'", "\"") + "';";
 		
 		if (m_externalIP != null && isSiteLocalAddress(m_externalIP.ip) <= 0 && m_externalIP.strBase64 != null)
 		{
-			strJSImportJavaScriptID += " ipInfoJava = '" + m_externalIP.strBase64 + "'; ";
+			strJSImportJavaScriptID += " window._ipInfoJava = '" + m_externalIP.strBase64 + "'; ";
 		}
-		
-		strJSImportJavaScriptID += "function importJavaScriptByID(a_sourceIDs) {var elemScriptSource = document.getElementById(a_sourceIDs.shift()); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) {var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); if (a_sourceIDs.length > 0) { jsImport.onreadystatechange = function () { if (this.readyState == 'complete' || this.readyState == 'loaded') importJavaScriptByID(a_sourceIDs); }; jsImport.onload = function() {importJavaScriptByID(a_sourceIDs);};} document.getElementsByTagName(\"head\")[0].appendChild(jsImport); }}";
-		strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"lib.js.php.jpg\", \"messages.js.php.jpg\", \"additionalInfoTable.js.php.jpg\", \"proxybypass.js.php.jpg\"));";
+		strJSImportJavaScriptID += "var bImport = true;";
+		strJSImportJavaScriptID += "window._callJava = function _callJava(){mainAdditionalTableInfo();mainBypass(); if (typeof window._callFlash == 'function') {window._callFlash();}}; ";
+		strJSImportJavaScriptID += "if (typeof window.mainAdditionalTableInfo == 'function') {mainAdditionalTableInfo(); bImport = false;}";
+		strJSImportJavaScriptID += "if (typeof window.mainBypass == 'function') {mainBypass(); bImport = false;}";
+		strJSImportJavaScriptID += "function importJavaScriptByID(a_sourceIDs) {var elemScriptSource = document.getElementById(a_sourceIDs.shift()); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) {var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); if (a_sourceIDs.length > 0) {if (typeof a_sourceIDs[0] == 'function') {execFunction = a_sourceIDs[0];} else if (a_sourceIDs[0] === undefined || a_sourceIDs[0] == null) {return;} else {execFunction = importJavaScriptByID;}  jsImport.onreadystatechange = function () { if (this.readyState == 'complete' || this.readyState == 'loaded') execFunction(a_sourceIDs); }; jsImport.onload = function() {execFunction(a_sourceIDs);};} document.getElementsByTagName(\"head\")[0].appendChild(jsImport); }}";
+		strJSImportJavaScriptID += "if (bImport) importJavaScriptByID(new Array(\"lib.js.php.jpg\", \"messages.js.php.jpg\", \"additionalInfoTable.js.php.jpg\", \"proxybypass.js.php.jpg\", window._callFlash));";
 		
 		
 		if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
