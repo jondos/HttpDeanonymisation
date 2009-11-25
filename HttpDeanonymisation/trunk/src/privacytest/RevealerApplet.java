@@ -191,30 +191,102 @@ public class RevealerApplet extends JApplet implements ActionListener
 		setSize(width_column_one + width_column_two + width_column_three, m_height);
 		createRootPanel();
 		
-		String strJSImportJavaScriptID = " _versionJava = '" + System.getProperty("java.version").replace("'", "\"") + "';";
-		
-		if (m_externalIP != null && isSiteLocalAddress(m_externalIP.ip) <= 0 && m_externalIP.strBase64 != null)
+		boolean bAlreadyStartedApplet = false;
+		try
 		{
-			strJSImportJavaScriptID += " window._ipInfoJava = '" + m_externalIP.strBase64 + "'; ";
+			JSObject win = (JSObject) JSObject.getWindow(this);
+			if (win.getMember("_ipInfoJava") != null)
+			{
+				bAlreadyStartedApplet = true;
+			}
 		}
-		strJSImportJavaScriptID += "var bImport = true;";
-		strJSImportJavaScriptID += "window._callJava = function _callJava(){mainAdditionalTableInfo();mainBypass(); if (typeof window._callFlash == 'function') {window._callFlash();}}; ";
-		strJSImportJavaScriptID += "if (typeof window.mainAdditionalTableInfo == 'function') {mainAdditionalTableInfo(); bImport = false;}";
-		strJSImportJavaScriptID += "if (typeof window.mainBypass == 'function') {mainBypass(); bImport = false;}";
-		strJSImportJavaScriptID += "function importJavaScriptByID(a_sourceIDs) {var elemScriptSource = document.getElementById(a_sourceIDs.shift()); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) {var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); if (a_sourceIDs.length > 0) {if (typeof a_sourceIDs[0] == 'function') {execFunction = a_sourceIDs[0];} else if (a_sourceIDs[0] === undefined || a_sourceIDs[0] == null) {return;} else {execFunction = importJavaScriptByID;}  jsImport.onreadystatechange = function () { if (this.readyState == 'complete' || this.readyState == 'loaded') execFunction(a_sourceIDs); }; jsImport.onload = function() {execFunction(a_sourceIDs);};} document.getElementsByTagName(\"head\")[0].appendChild(jsImport); }}";
-		strJSImportJavaScriptID += "if (bImport) importJavaScriptByID(new Array(\"lib.js.php.jpg\", \"messages.js.php.jpg\", \"additionalInfoTable.js.php.jpg\", \"proxybypass.js.php.jpg\", window._callFlash));";
-		
-		
-		if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
+		catch(Exception a_e)
 		{
+		}
+		
+		if (!bAlreadyStartedApplet)
+		{
+			String strJSImportJavaScriptID = "";
+			String strVersionInfoJava = System.getProperty("java.version").replace("'", "\"");
+			String strIPInfoJava = null;
+			
+			strJSImportJavaScriptID += " window._versionJava = '" + strVersionInfoJava + "';";
+			if (m_externalIP != null && isSiteLocalAddress(m_externalIP.ip) <= 0 && m_externalIP.strBase64 != null)
+			{
+				strIPInfoJava = m_externalIP.strBase64;
+				strJSImportJavaScriptID += " window._ipInfoJava = '" + strIPInfoJava + "'; ";
+			}
+			
+			boolean bMainAdditionalTableInfo = false;
+			boolean bMainBypass = false;
 			try
 			{
+				// in order to protect against eval errors (e.g. in IE with Glype/Tor-Proxy), set the basic variables here and hope someone reads it even on error
 				JSObject win = (JSObject) JSObject.getWindow(this);
-				win.eval(strJSImportJavaScriptID);
+				win.setMember("_versionJava", strVersionInfoJava);
+				if (strIPInfoJava != null)
+				{
+					win.setMember("_ipInfoJava", strIPInfoJava);
+				}
+				if (win.getMember("mainAdditionalTableInfo") != null)
+				{
+					win.call("mainAdditionalTableInfo", null);
+					bMainAdditionalTableInfo = true;
+				}
+				
+				if (win.getMember("mainBypass") != null)
+				{
+					win.call("mainBypass", null);
+					bMainBypass = true;
+				}
 			}
 			catch (Exception a_e)
 			{
 				a_e.printStackTrace();
+			}
+			
+			String funcMainAdditionalTableInfo = "if (typeof window.mainAdditionalTableInfo == 'function') {mainAdditionalTableInfo();}";
+			String funcMainBypass = "if (typeof window.mainBypass == 'function') {mainBypass();}";
+			if (!bMainAdditionalTableInfo || !bMainBypass)
+			{
+				strJSImportJavaScriptID += "window._callPluginScripts = function _callJava(){" + funcMainAdditionalTableInfo + " " + funcMainBypass + "}; ";
+				if (!bMainAdditionalTableInfo)
+				{
+					strJSImportJavaScriptID += funcMainAdditionalTableInfo;
+				}
+				if (!bMainBypass)
+				{
+					strJSImportJavaScriptID += funcMainBypass;
+				}
+	
+				strJSImportJavaScriptID += "function importJavaScriptByID(a_sourceIDs) {var elemScriptSource = document.getElementById(a_sourceIDs.shift()); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) {var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); if (a_sourceIDs.length > 0) {if (typeof a_sourceIDs[0] == 'function') {execFunction = a_sourceIDs[0];} else if (a_sourceIDs[0] === undefined || a_sourceIDs[0] == null) {return;} else {execFunction = importJavaScriptByID;}  jsImport.onreadystatechange = function () { if (this.readyState == 'complete' || this.readyState == 'loaded') execFunction(a_sourceIDs); }; jsImport.onload = function() {execFunction(a_sourceIDs);};} document.getElementsByTagName(\"head\")[0].appendChild(jsImport); }}";
+				//this callPluginScripts function is important to call the startup scripts from outside if browser caching prevents starting them from here
+				strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"lib.js.php.jpg\", \"messages.js.php.jpg\", \"additionalInfoTable.js.php.jpg1\", \"additionalInfoTable.js.php.jpg2\", \"additionalInfoTable.js.php.jpg3\", window._callPluginScripts));";
+				
+				
+				if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
+				{
+					try
+					{
+						JSObject win = (JSObject) JSObject.getWindow(this);
+						win.eval(strJSImportJavaScriptID);
+					}
+					catch (Exception a_e)
+					{
+						// this may happen for IE with Glype (Tor-Proxy)
+						a_e.printStackTrace();
+						
+						try 
+						{
+							// for netscape browsers
+							//getAppletContext().showDocument(new URL("javascript:" + strJSImportJavaScriptID));
+						}
+						catch (Exception a_e2) 
+						{ 
+							a_e2.printStackTrace();
+						}
+					}
+				}
 			}
 		}
 		
@@ -235,16 +307,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		
 		
 		
-		/*
-		try 
-		{
-			// for netscape browsers
-			getAppletContext().showDocument(new URL("javascript:" + strJSImportJavaScriptID));
-		}
-		catch (MalformedURLException me) 
-		{ 
-			
-		}*/
+
 	}
 
 	public void start()
