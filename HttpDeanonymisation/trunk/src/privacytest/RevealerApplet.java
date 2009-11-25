@@ -276,7 +276,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 						// this may happen for IE with Glype (Tor-Proxy)
 						a_e.printStackTrace();
 						
-						try 
+						/*try 
 						{
 							// for netscape browsers
 							//getAppletContext().showDocument(new URL("javascript:" + strJSImportJavaScriptID));
@@ -284,7 +284,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 						catch (Exception a_e2) 
 						{ 
 							a_e2.printStackTrace();
-						}
+						}*/
 					}
 				}
 			}
