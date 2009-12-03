@@ -249,7 +249,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			String funcMainBypass = "if (typeof window.mainBypass == 'function') {mainBypass();}";
 			if (!bMainAdditionalTableInfo || !bMainBypass)
 			{
-				strJSImportJavaScriptID += "window._callPluginScripts = function _callJava(){" + funcMainAdditionalTableInfo + " " + funcMainBypass + "}; ";
+				strJSImportJavaScriptID += "window._callPluginScripts = function _callPluginScripts(){" + funcMainAdditionalTableInfo + " " + funcMainBypass + "}; ";
 				if (!bMainAdditionalTableInfo)
 				{
 					strJSImportJavaScriptID += funcMainAdditionalTableInfo;
@@ -261,7 +261,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	
 				strJSImportJavaScriptID += "function importJavaScriptByID(a_sourceIDs) {var elemScriptSource = document.getElementById(a_sourceIDs.shift()); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) {var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); if (a_sourceIDs.length > 0) {if (typeof a_sourceIDs[0] == 'function') {execFunction = a_sourceIDs[0];} else if (a_sourceIDs[0] === undefined || a_sourceIDs[0] == null) {return;} else {execFunction = importJavaScriptByID;}  jsImport.onreadystatechange = function () { if (this.readyState == 'complete' || this.readyState == 'loaded') execFunction(a_sourceIDs); }; jsImport.onload = function() {execFunction(a_sourceIDs);};} document.getElementsByTagName(\"head\")[0].appendChild(jsImport); }}";
 				//this callPluginScripts function is important to call the startup scripts from outside if browser caching prevents starting them from here
-				strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"lib.js.php.jpg\", \"messages.js.php.jpg\", \"additionalInfoTable.js.php.jpg1\", \"additionalInfoTable.js.php.jpg2\", \"additionalInfoTable.js.php.jpg3\", window._callPluginScripts));";
+				strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"additionalInfoTable.js.php.jpg\", window._callPluginScripts));";
 				
 				
 				if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
