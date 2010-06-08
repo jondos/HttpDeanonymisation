@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 
 
+import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
 
@@ -102,9 +103,13 @@ public class RevealerApplet extends JApplet implements ActionListener
 		
 		URL urlDocumentBase;
 		
-		System.out.println("Startup!");
+		System.out.println("Starting up on " + getDocumentBase());
+		System.out.println("Loaded from: " + getCodeBase());
+		
+		
+	
 
-		if(getParameter("WIDTH_COLUMN_ONE") != null)
+		if (getParameter("WIDTH_COLUMN_ONE") != null)
 		{
 			try
 			{
@@ -116,7 +121,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 		}
 		
-		if(getParameter("WIDTH_COLUMN_TWO") != null)
+		if (getParameter("WIDTH_COLUMN_TWO") != null)
 		{
 			try
 			{
@@ -154,7 +159,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		
 		
 
-		if(getParameter("HEIGHT") != null)
+		if (getParameter("HEIGHT") != null)
 		{
 			try
 			{
@@ -182,6 +187,11 @@ public class RevealerApplet extends JApplet implements ActionListener
 		
 		m_targetURL = getParameter("SERVER_URL_FOR_IP");
 		m_serverDomain = getParameter("SERVER_DOMAIN");
+		// some web proxies add the port; remove it!
+		if (m_serverDomain != null && m_serverDomain.indexOf(":") > 0)
+		{
+			m_serverDomain = m_serverDomain.substring(0, m_serverDomain.lastIndexOf(":"));
+		}
 
 		m_vecInterfaces = new Vector();
 
@@ -190,6 +200,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 		setSize(width_column_one + width_column_two + width_column_three, m_height);
 		createRootPanel();
+		
+		
 		
 		boolean bAlreadyStartedApplet = false;
 		try
@@ -204,6 +216,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 		}
 		
+		
+		JSObject win = null;
 		if (!bAlreadyStartedApplet)
 		{
 			String strJSImportJavaScriptID = "";
@@ -219,25 +233,40 @@ public class RevealerApplet extends JApplet implements ActionListener
 			
 			boolean bMainAdditionalTableInfo = false;
 			boolean bMainBypass = false;
+			
 			try
 			{
 				// in order to protect against eval errors (e.g. in IE with Glype/Tor-Proxy), set the basic variables here and hope someone reads it even on error
-				JSObject win = (JSObject) JSObject.getWindow(this);
+				win = JSObject.getWindow(this);
 				win.setMember("_versionJava", strVersionInfoJava);
 				if (strIPInfoJava != null)
 				{
 					win.setMember("_ipInfoJava", strIPInfoJava);
 				}
-				if (win.getMember("mainAdditionalTableInfo") != null)
+				try
 				{
-					win.call("mainAdditionalTableInfo", null);
-					bMainAdditionalTableInfo = true;
+					if (win.getMember("mainAdditionalTableInfo") != null)
+					{
+						win.call("mainAdditionalTableInfo", null);
+						bMainAdditionalTableInfo = true;
+					}
+				} 
+				catch (JSException a_e)
+				{
+					a_e.printStackTrace();
 				}
 				
-				if (win.getMember("mainBypass") != null)
+				try
 				{
-					win.call("mainBypass", null);
-					bMainBypass = true;
+					if (win.getMember("mainBypass") != null)
+					{
+						win.call("mainBypass", null);
+						bMainBypass = true;
+					}
+				}
+				catch (JSException a_e)
+				{
+					a_e.printStackTrace();
 				}
 			}
 			catch (Exception a_e)
@@ -247,9 +276,16 @@ public class RevealerApplet extends JApplet implements ActionListener
 			
 			String funcMainAdditionalTableInfo = "if (typeof window.mainAdditionalTableInfo == 'function') {mainAdditionalTableInfo();}";
 			String funcMainBypass = "if (typeof window.mainBypass == 'function') {mainBypass();}";
+			String funcCreateApplet = "";
+			//m_externalIP = null;
+			if (m_externalIP == null && 
+					(getParameter("FROM_JS") == null || !getParameter("FROM_JS").equalsIgnoreCase("true")))
+			{
+				funcCreateApplet = "if (typeof window.createApplet == 'function') {createApplet(true);}";
+			}
 			if (!bMainAdditionalTableInfo || !bMainBypass)
 			{
-				strJSImportJavaScriptID += "window._callPluginScripts = function _callPluginScripts(){" + funcMainAdditionalTableInfo + " " + funcMainBypass + "}; ";
+				strJSImportJavaScriptID += "window._callPluginScripts = function _callPluginScripts(){" + funcMainAdditionalTableInfo + " " + funcMainBypass + " " + funcCreateApplet + "}; ";
 				if (!bMainAdditionalTableInfo)
 				{
 					strJSImportJavaScriptID += funcMainAdditionalTableInfo;
@@ -263,32 +299,22 @@ public class RevealerApplet extends JApplet implements ActionListener
 				//this callPluginScripts function is important to call the startup scripts from outside if browser caching prevents starting them from here
 				strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"additionalInfoTable.js.php.jpg\", window._callPluginScripts));";
 				
-				
 				if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
 				{
 					try
 					{
-						JSObject win = (JSObject) JSObject.getWindow(this);
+						win = JSObject.getWindow(this);
 						win.eval(strJSImportJavaScriptID);
 					}
 					catch (Exception a_e)
 					{
 						// this may happen for IE with Glype (Tor-Proxy)
 						a_e.printStackTrace();
-						
-						/*try 
-						{
-							// for netscape browsers
-							//getAppletContext().showDocument(new URL("javascript:" + strJSImportJavaScriptID));
-						}
-						catch (Exception a_e2) 
-						{ 
-							a_e2.printStackTrace();
-						}*/
 					}
-				}
+				} 
 			}
 		}
+	
 		
 		try
 		{
@@ -305,9 +331,24 @@ public class RevealerApplet extends JApplet implements ActionListener
 			getAppletContext().showDocument(urlDocumentBase, "_self");
 		}
 		
-		
-		
-
+		//m_externalIP = null;
+		/*
+		if (m_externalIP == null && 
+			(getParameter("FROM_JS") == null || !getParameter("FROM_JS").equalsIgnoreCase("true")))
+		{
+			try
+			{
+				win = JSObject.getWindow(this);
+				if (win.getMember("mainAdditionalTableInfo") != null)
+				{
+					win.call("createApplet", new Object[]{new Boolean(true)});
+				}
+			} 
+			catch (JSException a_e)
+			{
+				a_e.printStackTrace();
+			}
+		}*/
 	}
 
 	public void start()
