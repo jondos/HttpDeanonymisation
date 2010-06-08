@@ -1,0 +1,28 @@
+<assembly>
+  <id>no-external-dependencies</id>
+  <formats>
+    <format>jar</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <unpack>true</unpack>
+      <scope>runtime</scope>
+       <excludes>
+        <exclude>anon:BouncyCastleLightForAN.ON</exclude>
+        <exclude>anon:log4jForANON</exclude>
+        <exclude>junit:junit</exclude>
+        <exclude>junitx:junitx</exclude>
+        <exclude>org.xerial:sqlite-jdbc</exclude>
+        <exclude>xml:xml</exclude>
+        <exclude>xmlrpc:xmlrpc-jdk11</exclude>
+        <exclude>skype:skype-jdk11</exclude>
+      </excludes> 
+    </dependencySet>
+  </dependencySets>
+  <!--   <fileSets>
+    <fileSet>
+      <directory>${project.build.outputDirectory}</directory>
+    </fileSet>
+  </fileSets> -->
+</assembly> 
