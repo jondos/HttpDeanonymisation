@@ -689,11 +689,11 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 
 		m_vecAnonProperties = new Vector();
-		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_JAVA_VM), System.getProperty("java.vendor") + " " + System.getProperty("java.version"), AnonProperty.RATING_OKISH));
-		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_OS), System.getProperty("os.name") + " " + 
-				System.getProperty("os.arch") + " Version " + System.getProperty("os.version") +
-				"(" + Locale.getDefault().getDisplayLanguage(myResources.getLocale()) + ", " + 
+		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_JAVA_VM), System.getProperty("java.vendor") + " " + System.getProperty("java.version")
+				+ " (" + Locale.getDefault().getDisplayLanguage(myResources.getLocale()) + ", " + 
 				Locale.getDefault().getDisplayCountry(myResources.getLocale()) + ")", AnonProperty.RATING_OKISH));
+		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_OS), System.getProperty("os.name") + " " + 
+				System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
 		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
 		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
 		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);*/
