@@ -144,12 +144,12 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 	Color m_cNormal = new Color(68, 68, 68);
 	Color m_cHeader = new Color(0, 0, 128);
 	
-	public AnonPropertyTable(Applet a_applet,int a_colSizeOne, int a_fontSize)
+	public AnonPropertyTable(Applet a_applet,int a_colSizeOne, int a_fontSize, int a_rowHeight)
 	{
-		this(a_applet, true, a_colSizeOne, 0, a_fontSize);
+		this(a_applet, true, a_colSizeOne, 0, a_fontSize, a_rowHeight);
 	}
 	
-	public AnonPropertyTable(Applet a_applet, boolean a_bHide3rdRow, int a_colSizeOne, int a_colSizeTwo, int a_fontSize)
+	public AnonPropertyTable(Applet a_applet, boolean a_bHide3rdRow, int a_colSizeOne, int a_colSizeTwo, int a_fontSize, int a_rowHeight)
 	{
 		m_fNormal = new Font("Verdana", 0, a_fontSize);
 		m_model = new AnonPropertyTableModel();
@@ -161,7 +161,8 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 		//setDefaultRenderer(String.class, m_cellRenderer);
 		setDefaultRenderer(Object.class, m_cellRenderer);
 		//setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		setRowHeight(18);
+		//setRowHeight(18);
+		setRowHeight(a_rowHeight);
 		
 		setWidth(0, a_colSizeOne);
 		
