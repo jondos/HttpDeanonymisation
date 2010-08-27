@@ -75,6 +75,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private int width_column_three = 100;
 	private int m_height = 300;
 	private int m_fontSize = 14;
+	private int m_iRowHeight = 18;
 	
 	private IPInfo m_externalIP;
 	private IPInfo m_internalIP;
@@ -150,6 +151,19 @@ public class RevealerApplet extends JApplet implements ActionListener
 			try
 			{
 				m_fontSize = Integer.parseInt(getParameter("FONT_SIZE"));
+			}
+			catch(NumberFormatException e)
+			{
+
+			}
+		}
+		
+		
+		if (getParameter("ROW_HEIGHT") != null)
+		{
+			try
+			{
+				m_iRowHeight = Integer.parseInt(getParameter("ROW_HEIGHT"));
 			}
 			catch(NumberFormatException e)
 			{
@@ -763,15 +777,15 @@ public class RevealerApplet extends JApplet implements ActionListener
 		anonPropertyNetwork = new AnonProperty(myResources.getString(MSG_NETWORK_INTERFACE), "", iRating);
 		if (m_vecAnonProperties.size() == 0)
 		{
-			tableTop = new AnonPropertyTable(this, width_column_one + width_column_two - width_column_three, m_fontSize);
+			tableTop = new AnonPropertyTable(this, width_column_one + width_column_two - width_column_three, m_fontSize, m_iRowHeight);
 			tableTop.add(anonPropertyNetwork);
 			anonPropertyNetwork = null;
 		}
 		else
 		{
-			tableTop = new AnonPropertyTable(this, true, width_column_one, width_column_two - width_column_three, m_fontSize);
+			tableTop = new AnonPropertyTable(this, true, width_column_one, width_column_two - width_column_three, m_fontSize, m_iRowHeight);
 		}
-		tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
+		tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize, m_iRowHeight);
 		
 		while (m_vecAnonProperties.size() > 0)
 		{
@@ -803,7 +817,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			//tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
 			//tableBottom.add(new AnonProperty(myResources.getString(MSG_IP_ADDRESS), myResources.getString(MSG_NETWORK_INTERFACE), AnonProperty.RATING_NONE));
-			tableBottom = new AnonPropertyTable(this, width_column_one + width_column_two, m_fontSize);
+			tableBottom = new AnonPropertyTable(this, width_column_one + width_column_two, m_fontSize, m_iRowHeight);
 			if (anonPropertyNetwork != null)
 			{
 				tableBottom.add(anonPropertyNetwork);
@@ -855,8 +869,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		
 		//c.fill = GridBagConstraints.HORIZONTAL;
 		
-		AnonPropertyTable tableTop = new AnonPropertyTable(this, true, width_column_one, width_column_two - width_column_three, m_fontSize);
-		AnonPropertyTable tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize);
+		AnonPropertyTable tableTop = new AnonPropertyTable(this, true, width_column_one, width_column_two - width_column_three, m_fontSize, m_iRowHeight);
+		AnonPropertyTable tableBottom = new AnonPropertyTable(this, true, width_column_one, width_column_two, m_fontSize, m_iRowHeight);
 		AnonProperty systemProperty = null;
 		int iCountDetails = 0;
 	
