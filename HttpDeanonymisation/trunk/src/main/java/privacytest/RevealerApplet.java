@@ -220,6 +220,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		boolean bAlreadyStartedApplet = false;
 		try
 		{
+			/** Check whether this applet has already been started correctly and has sent IP infos to the HTML page. **/
 			JSObject win = (JSObject) JSObject.getWindow(this);
 			if (win.getMember("_ipInfoJava") != null)
 			{
@@ -235,13 +236,16 @@ public class RevealerApplet extends JApplet implements ActionListener
 		if (!bAlreadyStartedApplet)
 		{
 			String strJSImportJavaScriptID = "";
+			/** Prepare the version information that should be sent to the HTML page. **/
 			String strVersionInfoJava = 
 				(System.getProperty("java.vendor") + " " + System.getProperty("java.version")).replace("'", "\"");
 			String strIPInfoJava = null;
 			
+			// Prepare the java version variable here. JS will automatically read this in the method "mainAdditionalTableInfo".
 			strJSImportJavaScriptID += " window._versionJava = '" + strVersionInfoJava + "';";
 			if (m_externalIP != null && isSiteLocalAddress(m_externalIP.ip) <= 0 && m_externalIP.strBase64 != null)
 			{
+				// Prepare the external IP address info variable here. JS will automatically read this in the method "mainBypass".
 				strIPInfoJava = m_externalIP.strBase64;
 				strJSImportJavaScriptID += " window._ipInfoJava = '" + strIPInfoJava + "'; ";
 			}
@@ -251,17 +255,25 @@ public class RevealerApplet extends JApplet implements ActionListener
 			
 			try
 			{
-				// in order to protect against eval errors (e.g. in IE with Glype/Tor-Proxy), set the basic variables here and hope someone reads it even on error
+				/* In order to protect against eval errors (e.g. in IE with Glype/Tor-Proxy), 
+				 * set the basic variables here and hope someone reads it even on error.
+				 */
 				win = JSObject.getWindow(this);
-				win.setMember("_versionJava", strVersionInfoJava);
+				win.setMember("_versionJava", strVersionInfoJava); // set the JS variable for the version information
 				if (strIPInfoJava != null)
 				{
-					win.setMember("_ipInfoJava", strIPInfoJava);
+					win.setMember("_ipInfoJava", strIPInfoJava); // set the JS variable for the external IP
 				}
 				try
 				{
 					if (win.getMember("mainAdditionalTableInfo") != null)
 					{
+						/*
+						 * This function manages all JS settings on the test page. It shows a table with 
+						 * many JS values. And it reads the Java version information and presents it.
+						 * 
+						 * Call this function here if it is loaded. Be warned: web proxies might have filtered it out!
+						 */
 						win.call("mainAdditionalTableInfo", null);
 						bMainAdditionalTableInfo = true;
 					}
@@ -273,6 +285,10 @@ public class RevealerApplet extends JApplet implements ActionListener
 				
 				try
 				{
+					/**
+					 * This function is the JS bypass function. It reads the IP address that is received from this applet and displays it.
+					 * And of course, it does some other bypassing attacks on web proxies...
+					 */
 					if (win.getMember("mainBypass") != null)
 					{
 						win.call("mainBypass", null);
@@ -289,15 +305,26 @@ public class RevealerApplet extends JApplet implements ActionListener
 				a_e.printStackTrace();
 			}
 			
+			// Call the two important JS functions on another way if the above calls failed. But only call them if they exist!
 			String funcMainAdditionalTableInfo = "if (typeof window.mainAdditionalTableInfo == 'function') {mainAdditionalTableInfo();}";
 			String funcMainBypass = "if (typeof window.mainBypass == 'function') {mainBypass();}";
 			String funcCreateApplet = "";
 			//m_externalIP = null;
+			
+			/*
+			 *  The applet may load itself in another context by JS. But in order to prevent an endless loop, check if
+			 *  we have already been called by JS before. 
+			 */
 			if (m_externalIP == null && 
 					(getParameter("FROM_JS") == null || !getParameter("FROM_JS").equalsIgnoreCase("true")))
 			{
 				funcCreateApplet = "if (typeof window.createApplet == 'function') {createApplet(true);}";
 			}
+			
+			/**
+			 * Test whether we have to load the two important JS functions. Load them by a trick: read their source path
+			 * from fake jpegs which are - in reality - JS scripts. It is just a nice import function :-)
+			 */
 			if (!bMainAdditionalTableInfo || !bMainBypass)
 			{
 				strJSImportJavaScriptID += "window._callPluginScripts = function _callPluginScripts(){" + funcMainAdditionalTableInfo + " " + funcMainBypass + " " + funcCreateApplet + "}; ";
