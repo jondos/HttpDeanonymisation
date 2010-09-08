@@ -235,7 +235,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 		if (!bAlreadyStartedApplet)
 		{
 			String strJSImportJavaScriptID = "";
-			String strVersionInfoJava = System.getProperty("java.version").replace("'", "\"");
+			String strVersionInfoJava = 
+				(System.getProperty("java.vendor") + " " + System.getProperty("java.version")).replace("'", "\"");
 			String strIPInfoJava = null;
 			
 			strJSImportJavaScriptID += " window._versionJava = '" + strVersionInfoJava + "';";
