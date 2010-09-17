@@ -124,7 +124,18 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 				AnonProperty prop = (AnonProperty) m_properties.elementAt(rowIndex);
 				
 				if(columnIndex == 0) return prop;
-				if(columnIndex == 1) return prop.getValue();
+				if(columnIndex == 1) 
+				{
+					if (prop.getAction() != null)
+					{
+						return prop.getAction();
+					}
+					else
+					{
+						return prop.getValue();
+					}
+					
+				}
 				if(columnIndex == 2) return prop.getAction();
 			}
 			catch(Exception ex) { }
@@ -241,7 +252,10 @@ class AnonPropertyTable extends JTable implements MouseMotionListener, MouseList
 			{
 				m_applet.getAppletContext().showDocument(new URL(((AnonPropertyAction) value).getUrl()), "_blank");
 			}
-			catch(MalformedURLException ex) { }
+			catch(MalformedURLException ex) 
+			{ 
+				ex.printStackTrace();
+			}
 		}
 	}
 	

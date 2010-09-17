@@ -25,9 +25,12 @@ import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
 
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Enumeration;
@@ -48,6 +51,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private static final String MSG_LOCATION = "location";
 	private static final String MSG_OS = "os";
 	private static final String MSG_INTERNAL_IP = "internalIP";
+	private static final String MSG_FIX_PROBLEM = "fixProblem";
 	private static final String MSG_TRUSTED_APPLET_DESC= "trustedAppletDescription";
 	private static final String MSG_TRUSTED_APPLET = "trustedApplet";
 	private static final String MSG_NETWORK_INTERFACE = "networkInterface";
@@ -56,9 +60,13 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private static final String MSG_JAVA_IS_ACTIVATED = "javaIsActivated";
 	private static final String MSG_JAVA_ANON_BAD = "javaAnonBad";
 	private final static String MSG_DETAILS = "details";
-	private final static String MSG_BACK = "back";	
+	private final static String MSG_BACK = "back";
+	private final static String MSG_FONTS = "fonts";
 	private static final String MSG_JAVA_VM = "javaVM";
 	private static final String MSG_LANG = "language";
+	private static final String MSG_SCREEN_RESOLUTION = "screenResolution";
+	private static final String MSG_SCREENS = "screens";
+	
 	private static final String MSG_COUNTRY = "country";
 	private static final String MSG_WHOIS_DOMAIN = "whoisDomain";
 	private static final String MSG_REVERSE_DNS = "reverseDNS";
@@ -95,6 +103,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private String m_discoveredIP;
 	private boolean m_bUseSSL;
 	private String m_serverDomain;
+	private URL m_urlProxifierSettingsPage; 
 	
 	private ResourceBundle myResources;
 
@@ -118,9 +127,25 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 			catch(NumberFormatException e)
 			{
-
+				e.printStackTrace();
 			}
 		}
+		
+		if (getParameter("proxifierSettingsPage") != null)
+		{
+			try
+			{
+				m_urlProxifierSettingsPage = new URL(getParameter("proxifierSettingsPage"));
+			}
+			catch(MalformedURLException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		
+		
+		
 		
 		if (getParameter("WIDTH_COLUMN_TWO") != null)
 		{
@@ -130,7 +155,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 			catch(NumberFormatException e)
 			{
-
+				e.printStackTrace();
 			}
 		}
 		
@@ -142,7 +167,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 			catch(NumberFormatException e)
 			{
-
+				e.printStackTrace();
 			}
 		}
 		
@@ -154,7 +179,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 			catch(NumberFormatException e)
 			{
-
+				e.printStackTrace();
 			}
 		}
 		
@@ -167,7 +192,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 			catch(NumberFormatException e)
 			{
-
+				e.printStackTrace();
 			}
 		}
 		
@@ -181,7 +206,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 			catch(NumberFormatException e)
 			{
-
+				e.printStackTrace();
 			}
 		}
 		
@@ -718,6 +743,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		rootPanel.setBackground(Color.WHITE);
 		JScrollPane scroll = new JScrollPane(rootPanel);
 		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		scroll.setBorder(null);
 		getContentPane().add(scroll);
 
@@ -732,10 +758,46 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 		m_vecAnonProperties = new Vector();
 		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_JAVA_VM), System.getProperty("java.vendor") + " " + System.getProperty("java.version")
-				+ " (" + Locale.getDefault().getDisplayLanguage(myResources.getLocale()) + ", " + 
-				Locale.getDefault().getDisplayCountry(myResources.getLocale()) + ")", AnonProperty.RATING_OKISH));
+				, AnonProperty.RATING_OKISH));
 		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_OS), System.getProperty("os.name") + " " + 
 				System.getProperty("os.arch") + " Version " + System.getProperty("os.version"), AnonProperty.RATING_OKISH));
+		
+		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_LANG), 
+				Locale.getDefault().getDisplayLanguage(myResources.getLocale()) + ", " + 
+				Locale.getDefault().getDisplayCountry(myResources.getLocale()), AnonProperty.RATING_OKISH));
+		
+		int iScreens = 1;
+		try
+		{
+			iScreens = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
+		}
+		catch (Exception a_e)
+		{
+			a_e.printStackTrace();
+		}
+		
+		int iPixels = 0;
+		try
+		{
+			iPixels = Toolkit.getDefaultToolkit().getColorModel().getPixelSize();
+		}
+		catch (Exception a_e)
+		{
+			a_e.printStackTrace();
+		}
+		
+		m_vecAnonProperties.addElement(new AnonProperty(myResources.getString(MSG_SCREEN_RESOLUTION), 
+				Toolkit.getDefaultToolkit().getScreenSize().width + " x " +
+				Toolkit.getDefaultToolkit().getScreenSize().height + 
+				", " + Toolkit.getDefaultToolkit().getScreenResolution() + " DPI" +
+				(iPixels > 0 ? ", " + iPixels + " bit" : "") + 
+				(iScreens > 1 ? ", " + iScreens + " " + myResources.getString(MSG_SCREENS) : ""), AnonProperty.RATING_OKISH));
+		
+
+		
+// Toolkit.getDefaultToolkit().getScreenInsets(gc)
+		
+		
 		/*addSystemProperty(table, "browser", AnonProperty.RATING_OKISH);
 		addSystemProperty(table, "browser.vendor", AnonProperty.RATING_OKISH);
 		addSystemProperty(table, "browser.version", AnonProperty.RATING_OKISH);*/
@@ -748,6 +810,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		addSystemProperty(m_vecAnonProperties, "user.home", AnonProperty.RATING_BAD);
 		addSystemProperty(m_vecAnonProperties, "user.name", AnonProperty.RATING_BAD);
 		
+
 
 
 		
@@ -802,7 +865,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		{
 			iRating = AnonProperty.RATING_BAD;
 		}
-		anonPropertyNetwork = new AnonProperty(myResources.getString(MSG_NETWORK_INTERFACE), "", iRating);
+		anonPropertyNetwork = new AnonProperty(myResources.getString(MSG_NETWORK_INTERFACE) + " (" + m_vecInterfaces.size() + ")", "", iRating);
 		if (m_vecAnonProperties.size() == 0)
 		{
 			tableTop = new AnonPropertyTable(this, width_column_one + width_column_two - width_column_three, m_fontSize, m_iRowHeight);
@@ -859,6 +922,26 @@ public class RevealerApplet extends JApplet implements ActionListener
 				tableBottom.add(new AnonProperty(name, "", AnonProperty.RATING_NONE));
 			}
 	
+			Font[] systemFonts = null;
+			try
+			{
+				systemFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+			}
+			catch (Exception a_e)
+			{
+				a_e.printStackTrace();
+			}
+			
+			if (systemFonts != null && systemFonts.length > 0)
+			{
+				tableBottom.add(new AnonProperty(myResources.getString(MSG_FONTS) + " (" + systemFonts.length +  ")", "", AnonProperty.RATING_BAD));
+				
+				for (int i = 0; i < systemFonts.length; i++)
+				{
+					tableBottom.add(new AnonProperty(systemFonts[i].getFontName(), "", AnonProperty.RATING_NONE));
+				}
+			}
+			
 			c.gridy++;
 			c.weighty = 1.0;
 			mtailsPanel.add(tableBottom, c);
@@ -973,8 +1056,14 @@ public class RevealerApplet extends JApplet implements ActionListener
 				strText = myResources.getString(MSG_INTERNAL_IP);
 			}
 		 
-			
-			anonProperty = new AnonProperty(strText, ip, rating);
+			if (m_urlProxifierSettingsPage == null || rating != AnonProperty.RATING_BAD)
+			{
+				anonProperty = new AnonProperty(strText, ip, rating);
+			}
+			else
+			{	
+				anonProperty = new AnonProperty(strText, ip, ip + " " + myResources.getString(MSG_FIX_PROBLEM), m_urlProxifierSettingsPage.toString(), rating);
+			}
 			iCountDetails++;
 			bEndButton = addSwitchButton(tableTop, tableBottom, anonProperty, bEndButton, c);
 
@@ -1005,7 +1094,19 @@ public class RevealerApplet extends JApplet implements ActionListener
 				strText = myResources.getString(MSG_YOUR_IP);
 			}
 			iCountDetails++;
-			anonProperty = new AnonProperty(strText, m_internalIP.ip.getHostAddress(), rating);
+			
+			//if (m_urlProxifierSettingsPage == null) // || rating != AnonProperty.RATING_BAD)
+			{
+				anonProperty = new AnonProperty(strText, m_internalIP.ip.getHostAddress(), rating);
+			}
+			/*
+			else
+			{	
+				anonProperty = new AnonProperty(strText, m_internalIP.ip.getHostAddress(), 
+						m_internalIP.ip.getHostAddress() + " " + myResources.getString(MSG_FIX_PROBLEM), m_urlProxifierSettingsPage.toString(), rating);
+			}
+			*/
+			
 			bEndButton = addSwitchButton(tableTop, tableBottom, anonProperty, bEndButton, c);
 		}
 		
