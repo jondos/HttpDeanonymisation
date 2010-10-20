@@ -95,12 +95,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private JPanel mtailsPanel;
 	private JButton m_btnSwitch;
 	private JButton m_btnBack;
-	
 
-	JLabel m_lblLocation;
-	JLabel m_lblProvider;
-
-	private String m_discoveredIP;
 	private boolean m_bUseSSL;
 	private String m_serverDomain;
 	private URL m_urlProxifierSettingsPage; 
@@ -221,7 +216,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 			myResources = ResourceBundle.getBundle("anontest", Locale.ENGLISH);
 		}
 		
-		m_discoveredIP = getParameter("DISCOVERED_IP");
+		String defaultIP = getParameter("DISCOVERED_IP");
+		System.out.println("Already known IP: " + defaultIP);
 		m_bUseSSL = getParameter("USE_SSL") != null && getParameter("USE_SSL").equalsIgnoreCase("true");
 		
 		m_targetURL = getParameter("SERVER_URL_FOR_IP");
@@ -235,7 +231,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		m_vecInterfaces = new Vector();
 
 		System.out.println("Getting IPs...");
-		getIPs();
+		getIPs(defaultIP);
 
 		setSize(width_column_one + width_column_two + width_column_three, m_height);
 		createRootPanel();
@@ -447,24 +443,33 @@ public class RevealerApplet extends JApplet implements ActionListener
 		}
 	}
 
-	public void getIPs()
+	public void getIPs(String a_defaultIP)
 	{
-		getIPsFromAnontest(m_bUseSSL);
+		getIPsFromAnontest(a_defaultIP, m_bUseSSL);
 		//getIPsFromAnontest(false);
-		getIPsFromNetworkInterfaces();
+		getIPsFromNetworkInterfaces(a_defaultIP);
 	}
 
-	public void getIPsFromAnontest(boolean a_bUseSSL)
+	public void getIPsFromAnontest(String a_defaultIP, boolean a_bUseSSL)
 	{
 		try
 		{
-			String host = getDocumentBase().getHost();
+			String host;
 			String sourceIP;
 			String destIP;
 			String line;
 			Socket sock;
 			IPInfo ipinfo = new IPInfo();
 
+			if (getDocumentBase() != null)
+			{
+				host = getDocumentBase().getHost();
+			}
+			else
+			{
+				host = null;
+			}
+			
 			// System.out.println("Document host is: " + host + " with IP address " + InetAddress.getByName(host).getHostAddress());
 			
 			if (m_serverDomain != null)
@@ -488,7 +493,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 			sourceIP = sock.getLocalAddress().getHostAddress();
 			System.out.println("Got host address:" + sourceIP);
 			
-			if (!isLoopbackAddress(sock.getLocalAddress()))
+			if (!isLoopbackAddress(sock.getLocalAddress()) &&
+					(a_defaultIP == null || !a_defaultIP.equals(sourceIP)))
 			{
 				m_internalIP = new IPInfo();
 				m_internalIP.ip = sock.getLocalAddress();
@@ -532,7 +538,17 @@ public class RevealerApplet extends JApplet implements ActionListener
 			
 			System.out.println("Got IP: " + destIP);
 			
-			if (m_discoveredIP != null && m_discoveredIP.equals(destIP)) return;
+			if (a_defaultIP != null && a_defaultIP.equals(destIP)) return;
+			
+			if (sourceIP.equals(destIP))
+			{
+				m_internalIP = null;
+			}
+			
+			//if (m_discoveredIP != null)
+			{
+				//System.out.println("Already known IP (ignored): " + a_defaultIP);
+			}
 
 			// simple check to see if we have a valid ip address
 			// if it's an invalid ip it will throw an exception
@@ -618,7 +634,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		return geoip;
 	}
 
-	public void getIPsFromNetworkInterfaces()
+	public void getIPsFromNetworkInterfaces(String a_defaultIP)
 	{
 			Enumeration nets = null;
 			try
@@ -1095,17 +1111,15 @@ public class RevealerApplet extends JApplet implements ActionListener
 			}
 			iCountDetails++;
 			
-			//if (m_urlProxifierSettingsPage == null) // || rating != AnonProperty.RATING_BAD)
+			if (m_externalIP != null || m_urlProxifierSettingsPage == null) // || rating != AnonProperty.RATING_BAD)
 			{
 				anonProperty = new AnonProperty(strText, m_internalIP.ip.getHostAddress(), rating);
 			}
-			/*
 			else
 			{	
 				anonProperty = new AnonProperty(strText, m_internalIP.ip.getHostAddress(), 
 						m_internalIP.ip.getHostAddress() + " " + myResources.getString(MSG_FIX_PROBLEM), m_urlProxifierSettingsPage.toString(), rating);
 			}
-			*/
 			
 			bEndButton = addSwitchButton(tableTop, tableBottom, anonProperty, bEndButton, c);
 		}
