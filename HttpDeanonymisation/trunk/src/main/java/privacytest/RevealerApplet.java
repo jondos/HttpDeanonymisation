@@ -101,7 +101,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 	private URL m_urlProxifierSettingsPage; 
 	
 	private ResourceBundle myResources;
-
+	
 	public void init()
 	{
 		super.init();
@@ -111,6 +111,11 @@ public class RevealerApplet extends JApplet implements ActionListener
 		System.out.println("Starting up on " + getDocumentBase());
 		System.out.println("Loaded from: " + getCodeBase());
 		
+		
+		if (getParameter("TEST") != null && getParameter("TEST").equalsIgnoreCase("true"))
+		{
+			return;
+		}
 		
 	
 
@@ -207,14 +212,20 @@ public class RevealerApplet extends JApplet implements ActionListener
 		
 		System.out.println("Reading locale...");
 		
+		
+		
 		if(getParameter("LOCALE") != null)
 		{
-			myResources = ResourceBundle.getBundle("anontest", new Locale(getParameter("LOCALE"), ""));
+			//myResources = ResourceBundle.getBundle("anontest", new Locale(getParameter("LOCALE"), ""));
+			myResources = new ResourceProperties(new Locale(getParameter("LOCALE"), ""));
 		}
 		else
 		{
-			myResources = ResourceBundle.getBundle("anontest", Locale.ENGLISH);
+			myResources = new ResourceProperties(Locale.ENGLISH);
+			//myResources = ResourceBundle.getBundle("anontest", Locale.ENGLISH);
 		}
+		
+		
 		
 		String defaultIP = getParameter("DISCOVERED_IP");
 		System.out.println("Already known IP: " + defaultIP);
@@ -232,152 +243,170 @@ public class RevealerApplet extends JApplet implements ActionListener
 
 		System.out.println("Getting IPs...");
 		getIPs(defaultIP);
+		
+		System.out.println("Creating panel...");
 
 		setSize(width_column_one + width_column_two + width_column_three, m_height);
+		
 		createRootPanel();
 		
 		
-		
-		boolean bAlreadyStartedApplet = false;
-		try
+		if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
 		{
-			/** Check whether this applet has already been started correctly and has sent IP infos to the HTML page. **/
-			JSObject win = (JSObject) JSObject.getWindow(this);
-			if (win.getMember("_ipInfoJava") != null)
-			{
-				bAlreadyStartedApplet = true;
-			}
-		}
-		catch(Exception a_e)
-		{
-		}
-		
-		
-		JSObject win = null;
-		if (!bAlreadyStartedApplet)
-		{
-			String strJSImportJavaScriptID = "";
-			/** Prepare the version information that should be sent to the HTML page. **/
-			String strVersionInfoJava = 
-				(System.getProperty("java.vendor") + " " + System.getProperty("java.version")).replace("'", "\"");
-			String strIPInfoJava = null;
+			System.out.println("Entering JavaScript...");
 			
-			// Prepare the java version variable here. JS will automatically read this in the method "mainAdditionalTableInfo".
-			strJSImportJavaScriptID += " window._versionJava = '" + strVersionInfoJava + "';";
-			if (m_externalIP != null && isSiteLocalAddress(m_externalIP.ip) <= 0 && m_externalIP.strBase64 != null)
-			{
-				// Prepare the external IP address info variable here. JS will automatically read this in the method "mainBypass".
-				strIPInfoJava = m_externalIP.strBase64;
-				strJSImportJavaScriptID += " window._ipInfoJava = '" + strIPInfoJava + "'; ";
-			}
-			
-			boolean bMainAdditionalTableInfo = false;
-			boolean bMainBypass = false;
-			
+			boolean bAlreadyStartedApplet = false;
 			try
 			{
-				/* In order to protect against eval errors (e.g. in IE with Glype/Tor-Proxy), 
-				 * set the basic variables here and hope someone reads it even on error.
-				 */
-				win = JSObject.getWindow(this);
-				win.setMember("_versionJava", strVersionInfoJava); // set the JS variable for the version information
-				if (strIPInfoJava != null)
+				/** Check whether this applet has already been started correctly and has sent IP infos to the HTML page. **/
+				JSObject win = (JSObject) JSObject.getWindow(this);
+				if (win.getMember("_ipInfoJava") != null)
 				{
-					win.setMember("_ipInfoJava", strIPInfoJava); // set the JS variable for the external IP
-				}
-				try
-				{
-					if (win.getMember("mainAdditionalTableInfo") != null)
-					{
-						/*
-						 * This function manages all JS settings on the test page. It shows a table with 
-						 * many JS values. And it reads the Java version information and presents it.
-						 * 
-						 * Call this function here if it is loaded. Be warned: web proxies might have filtered it out!
-						 */
-						win.call("mainAdditionalTableInfo", null);
-						bMainAdditionalTableInfo = true;
-					}
-				} 
-				catch (JSException a_e)
-				{
-					a_e.printStackTrace();
-				}
-				
-				try
-				{
-					/**
-					 * This function is the JS bypass function. It reads the IP address that is received from this applet and displays it.
-					 * And of course, it does some other bypassing attacks on web proxies...
-					 */
-					if (win.getMember("mainBypass") != null)
-					{
-						win.call("mainBypass", null);
-						bMainBypass = true;
-					}
-				}
-				catch (JSException a_e)
-				{
-					a_e.printStackTrace();
+					bAlreadyStartedApplet = true;
 				}
 			}
-			catch (Exception a_e)
+			catch(Throwable a_e)
 			{
 				a_e.printStackTrace();
 			}
 			
-			// Call the two important JS functions on another way if the above calls failed. But only call them if they exist!
-			String funcMainAdditionalTableInfo = "if (typeof window.mainAdditionalTableInfo == 'function') {mainAdditionalTableInfo();}";
-			String funcMainBypass = "if (typeof window.mainBypass == 'function') {mainBypass();}";
-			String funcCreateApplet = "";
-			//m_externalIP = null;
+			System.out.println("JavaScript init called...");
 			
-			/*
-			 *  The applet may load itself in another context by JS. But in order to prevent an endless loop, check if
-			 *  we have already been called by JS before. 
-			 */
-			if (m_externalIP == null && 
-					(getParameter("FROM_JS") == null || !getParameter("FROM_JS").equalsIgnoreCase("true")))
+			//System.out.println("Calling eval...");
+			JSObject win = null;
+			if (!bAlreadyStartedApplet)
 			{
-				funcCreateApplet = "if (typeof window.createApplet == 'function') {createApplet(true);}";
-			}
-			
-			/**
-			 * Test whether we have to load the two important JS functions. Load them by a trick: read their source path
-			 * from fake jpegs which are - in reality - JS scripts. It is just a nice import function :-)
-			 */
-			if (!bMainAdditionalTableInfo || !bMainBypass)
-			{
-				strJSImportJavaScriptID += "window._callPluginScripts = function _callPluginScripts(){" + funcMainAdditionalTableInfo + " " + funcMainBypass + " " + funcCreateApplet + "}; ";
-				if (!bMainAdditionalTableInfo)
-				{
-					strJSImportJavaScriptID += funcMainAdditionalTableInfo;
-				}
-				if (!bMainBypass)
-				{
-					strJSImportJavaScriptID += funcMainBypass;
-				}
-	
-				strJSImportJavaScriptID += "function importJavaScriptByID(a_sourceIDs) {var elemScriptSource = document.getElementById(a_sourceIDs.shift()); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) {var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); if (a_sourceIDs.length > 0) {if (typeof a_sourceIDs[0] == 'function') {execFunction = a_sourceIDs[0];} else if (a_sourceIDs[0] === undefined || a_sourceIDs[0] == null) {return;} else {execFunction = importJavaScriptByID;}  jsImport.onreadystatechange = function () { if (this.readyState == 'complete' || this.readyState == 'loaded') execFunction(a_sourceIDs); }; jsImport.onload = function() {execFunction(a_sourceIDs);};} document.getElementsByTagName(\"head\")[0].appendChild(jsImport); }}";
-				//this callPluginScripts function is important to call the startup scripts from outside if browser caching prevents starting them from here
-				strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"additionalInfoTable.js.php.jpg\", window._callPluginScripts));";
+				String strJSImportJavaScriptID = "";
+				/** Prepare the version information that should be sent to the HTML page. **/
+				String strVersionInfoJava = 
+					(System.getProperty("java.vendor") + " " + System.getProperty("java.version")).replace("'", "\"");
+				String strIPInfoJava = null;
 				
-				if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
+				// Prepare the java version variable here. JS will automatically read this in the method "mainAdditionalTableInfo".
+				strJSImportJavaScriptID += " window._versionJava = '" + strVersionInfoJava + "';";
+				if (m_externalIP != null && isSiteLocalAddress(m_externalIP.ip) <= 0 && m_externalIP.strBase64 != null)
 				{
+					// Prepare the external IP address info variable here. JS will automatically read this in the method "mainBypass".
+					strIPInfoJava = m_externalIP.strBase64;
+					strJSImportJavaScriptID += " window._ipInfoJava = '" + strIPInfoJava + "'; ";
+				}
+				
+				boolean bMainAdditionalTableInfo = false;
+				boolean bMainBypass = false;
+				
+				try
+				{
+					System.out.println("Now doing main JavaScript calls...");
+					
+					/* In order to protect against eval errors (e.g. in IE with Glype/Tor-Proxy), 
+					 * set the basic variables here and hope someone reads it even on error.
+					 */
+					win = JSObject.getWindow(this);
+					win.setMember("_versionJava", strVersionInfoJava); // set the JS variable for the version information
+					if (strIPInfoJava != null)
+					{
+						win.setMember("_ipInfoJava", strIPInfoJava); // set the JS variable for the external IP
+					}
 					try
 					{
-						win = JSObject.getWindow(this);
-						win.eval(strJSImportJavaScriptID);
-					}
-					catch (Exception a_e)
+						if (win.getMember("mainAdditionalTableInfo") != null)
+						{
+							/*
+							 * This function manages all JS settings on the test page. It shows a table with 
+							 * many JS values. And it reads the Java version information and presents it.
+							 * 
+							 * Call this function here if it is loaded. Be warned: web proxies might have filtered it out!
+							 */
+							win.call("mainAdditionalTableInfo", null);
+							bMainAdditionalTableInfo = true;
+						}
+					} 
+					catch (Throwable a_e)
 					{
-						// this may happen for IE with Glype (Tor-Proxy)
 						a_e.printStackTrace();
 					}
-				} 
+					
+					System.out.println("Before mainBypass...");
+					
+					try
+					{
+						/**
+						 * This function is the JS bypass function. It reads the IP address that is received from this applet and displays it.
+						 * And of course, it does some other bypassing attacks on web proxies...
+						 */
+						if (win.getMember("mainBypass") != null)
+						{
+							win.call("mainBypass", null);
+							bMainBypass = true;
+						}
+					}
+					catch (Throwable a_e)
+					{
+						a_e.printStackTrace();
+					}
+				}
+				catch (Throwable a_e)
+				{
+					a_e.printStackTrace();
+				}
+				
+				// Call the two important JS functions on another way if the above calls failed. But only call them if they exist!
+				String funcMainAdditionalTableInfo = "if (typeof window.mainAdditionalTableInfo == 'function') {mainAdditionalTableInfo();}";
+				String funcMainBypass = "if (typeof window.mainBypass == 'function') {mainBypass();}";
+				String funcCreateApplet = "";
+				//m_externalIP = null;
+				
+				/*
+				 *  The applet may load itself in another context by JS. But in order to prevent an endless loop, check if
+				 *  we have already been called by JS before. 
+				 */
+				if (m_externalIP == null && 
+						(getParameter("FROM_JS") == null || !getParameter("FROM_JS").equalsIgnoreCase("true")))
+				{
+					funcCreateApplet = "if (typeof window.createApplet == 'function') {createApplet(true);}";
+				}
+				
+				/**
+				 * Test whether we have to load the two important JS functions. Load them by a trick: read their source path
+				 * from fake jpegs which are - in reality - JS scripts. It is just a nice import function :-)
+				 */
+				if (!bMainAdditionalTableInfo || !bMainBypass)
+				{
+					strJSImportJavaScriptID += "window._callPluginScripts = function _callPluginScripts(){" + funcMainAdditionalTableInfo + " " + funcMainBypass + " " + funcCreateApplet + "}; ";
+					if (!bMainAdditionalTableInfo)
+					{
+						strJSImportJavaScriptID += funcMainAdditionalTableInfo;
+					}
+					if (!bMainBypass)
+					{
+						strJSImportJavaScriptID += funcMainBypass;
+					}
+		
+					strJSImportJavaScriptID += "function importJavaScriptByID(a_sourceIDs) {var elemScriptSource = document.getElementById(a_sourceIDs.shift()); if (elemScriptSource != null && elemScriptSource.getAttribute(\"src\") != null) {var jsImport=document.createElement(\"script\"); jsImport.setAttribute(\"type\", \"text/javascript\"); jsImport.setAttribute(\"language\", \"JavaScript\"); jsImport.setAttribute(\"src\", elemScriptSource.getAttribute(\"src\")); if (a_sourceIDs.length > 0) {if (typeof a_sourceIDs[0] == 'function') {execFunction = a_sourceIDs[0];} else if (a_sourceIDs[0] === undefined || a_sourceIDs[0] == null) {return;} else {execFunction = importJavaScriptByID;}  jsImport.onreadystatechange = function () { if (this.readyState == 'complete' || this.readyState == 'loaded') execFunction(a_sourceIDs); }; jsImport.onload = function() {execFunction(a_sourceIDs);};} document.getElementsByTagName(\"head\")[0].appendChild(jsImport); }}";
+					//this callPluginScripts function is important to call the startup scripts from outside if browser caching prevents starting them from here
+					strJSImportJavaScriptID += "importJavaScriptByID(new Array(\"additionalInfoTable.js.php.jpg\", window._callPluginScripts));";
+					
+					//if (getParameter("CALL_SCRIPTS") == null || !getParameter("CALL_SCRIPTS").equalsIgnoreCase("false"))
+					{
+						System.out.println("Calling eval...");
+						
+						try
+						{
+							win = JSObject.getWindow(this);
+							win.eval(strJSImportJavaScriptID);
+						}
+						catch (Throwable a_e)
+						{
+							// this may happen for IE with Glype (Tor-Proxy)
+							a_e.printStackTrace();
+						}
+					} 
+				}
 			}
 		}
 	
+		System.out.println("Parsing DocumentBase...");
+		
 		
 		try
 		{
@@ -393,6 +422,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 	
 			getAppletContext().showDocument(urlDocumentBase, "_self");
 		}
+		
+		System.out.println("Finished!");
 		
 		//m_externalIP = null;
 		/*
@@ -455,7 +486,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 		try
 		{
 			String host;
-			String sourceIP;
+			String sourceIP = null;
 			String destIP;
 			String line;
 			Socket sock;
@@ -477,6 +508,8 @@ public class RevealerApplet extends JApplet implements ActionListener
 				host = m_serverDomain;
 			}
 
+			
+		
 			if(a_bUseSSL)
 			{
 				System.out.println("Creating SSL socket to host " + host +  "...");
@@ -488,10 +521,14 @@ public class RevealerApplet extends JApplet implements ActionListener
 				System.out.println("Creating http socket to host " + host + "...");
 				sock = new Socket(host, 80);
 			}
+
+			
+
 			
 			System.out.println("Socket created to " + host + " ! Getting host address...");
 			sourceIP = sock.getLocalAddress().getHostAddress();
 			System.out.println("Got host address:" + sourceIP);
+			
 			
 			if (!isLoopbackAddress(sock.getLocalAddress()) &&
 					(a_defaultIP == null || !a_defaultIP.equals(sourceIP)))
@@ -505,8 +542,9 @@ public class RevealerApplet extends JApplet implements ActionListener
 			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 
-			System.out.println("Send HTTP request for own IP address...");
-			writer.write("GET " + m_targetURL + HTTP_HEADER_END);
+			String strGet = "GET " + m_targetURL + HTTP_HEADER_END;
+			System.out.println("Send HTTP request for own IP address: " + strGet);
+			writer.write(strGet);
 			writer.flush();
 
 			System.out.println("HTTP request sent!");
@@ -540,7 +578,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			
 			if (a_defaultIP != null && a_defaultIP.equals(destIP)) return;
 			
-			if (sourceIP.equals(destIP))
+			if (sourceIP == null || sourceIP.equals(destIP))
 			{
 				m_internalIP = null;
 			}
@@ -564,7 +602,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			m_externalIP = ipinfo;
 			
 		}
-		catch(Exception e)
+		catch(Throwable e)
 		{
 			System.err.println("Getting IP addresses from anontest URL failed!");
 			e.printStackTrace();
@@ -621,7 +659,9 @@ public class RevealerApplet extends JApplet implements ActionListener
 			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 
-			writer.write("GET https://" + host + m_lookupURL + "?ip=" + ip +  HTTP_HEADER_END);
+			String strGet = "GET https://" + host + m_lookupURL + "?ip=" + ip +  HTTP_HEADER_END;
+			System.out.println("Gettin geoIP info: " + strGet);
+			writer.write(strGet);
 			writer.flush();
 
 			for(int i = 0; i < geoip.length; i++)
@@ -629,7 +669,10 @@ public class RevealerApplet extends JApplet implements ActionListener
 				geoip[i] = reader.readLine();
 			}
 		}
-		catch(Exception ex) {}
+		catch(Exception ex) 
+		{
+			ex.printStackTrace();
+		}
 
 		return geoip;
 	}
@@ -649,7 +692,7 @@ public class RevealerApplet extends JApplet implements ActionListener
 			while(nets != null && nets.hasMoreElements())
 			{
 				final NetworkInterface iface = (NetworkInterface) nets.nextElement();
-				System.out.println(iface.getDisplayName());
+				//System.out.println(iface.getDisplayName());
 				
 				Thread interruptableIPGetter = new Thread()
 				{
